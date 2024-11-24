@@ -56,19 +56,15 @@ const worker = new Worker(
         data: { ...promoterData, promoterId: id },
       });
 
-      // ping to the client webhook with the promoterr id
-      if (process.env.PROMOTER_WEBHOOK_URL) {
-        await fetch(process.env.PROMOTER_WEBHOOK_URL, {
-          method: "POST",
-          body: JSON.stringify({ id }),
-        });
-      }
-
       promoterMap.set(id, savedPromoterData);
     } catch (error) {
       console.error(error);
       const failedMessage =
-        error instanceof ScraperError ? error.message : String(error);
+        error instanceof ScraperError
+          ? error.message
+          : error instanceof TypeError && error.message.includes("fetch")
+          ? "Failed to fetch data"
+          : String(error);
       const promoterData = await prisma.promoterData.create({
         data: {
           failedMessage: failedMessage || "Unknown error",
@@ -76,12 +72,6 @@ const worker = new Worker(
           status: "FAILED",
         },
       });
-      if (process.env.PROMOTER_WEBHOOK_URL) {
-        await fetch(process.env.PROMOTER_WEBHOOK_URL, {
-          method: "POST",
-          body: JSON.stringify({ id }),
-        });
-      }
 
       promoterMap.set(id, promoterData);
     }
