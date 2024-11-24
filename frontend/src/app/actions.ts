@@ -1,5 +1,6 @@
 "use server";
 
+import type { Promoter } from "@/components/promoter-table";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
@@ -14,7 +15,9 @@ export const fetchPromoters = async () => {
   return res.json();
 };
 
-export const fetchPromoter = async (id: string) => {
+export const fetchPromoter = async (
+  id: string
+): Promise<Promoter | { error: string }> => {
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     cache: "no-store",
   });

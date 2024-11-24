@@ -9,7 +9,7 @@ export default async function EditPromoterPage({
 }) {
   const { id } = await params;
   const promoter = await fetchPromoter(id);
-  if (promoter.error) {
+  if (!promoter || "error" in promoter) {
     notFound();
   }
   return (

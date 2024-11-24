@@ -10,17 +10,18 @@ import {
 } from "@/components/ui/table";
 import { Pencil, Trash } from "lucide-react";
 import Link from "next/link";
+import { HistoryEntry } from "./promoter-history-table";
 
-interface Promoter {
-  id: number;
+export type Promoter = {
+  id: string;
   source: string;
-  data: {
-    referral: number;
-    unpaid: number;
-    clicks: number;
-    customers: number;
-  }[];
-}
+  data: HistoryEntry[];
+  email: string;
+  isEnabled: boolean;
+  manualRun: boolean;
+  schedule: string;
+  password: string;
+};
 
 export default async function PromoterTable() {
   const promoters = await fetchPromoters();

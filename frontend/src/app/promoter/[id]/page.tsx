@@ -19,7 +19,7 @@ export default async function PromoterPage({
     await manualRun(id);
   };
 
-  if (!promoter) {
+  if (!promoter || "error" in promoter) {
     notFound();
   }
 
@@ -66,7 +66,7 @@ export default async function PromoterPage({
           <CardTitle className="text-2xl font-bold">Historical Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <PromoterHistoryTable history={promoter.data} promoterId={id} />
+          <PromoterHistoryTable history={promoter.data} id={id} />
         </CardContent>
       </Card>
     </div>
