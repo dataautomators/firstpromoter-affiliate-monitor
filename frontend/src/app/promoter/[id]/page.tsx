@@ -1,4 +1,5 @@
 import { fetchPromoter, manualRun } from "@/app/actions";
+import { PromoterHistoryChart } from "@/components/promoter-history-chart";
 import PromoterHistoryTable from "@/components/promoter-history-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,8 @@ export default async function PromoterPage({
           </div>
         </CardContent>
       </Card>
+
+      <PromoterHistoryChart data={promoter.data} />
 
       <Card>
         <CardHeader>
