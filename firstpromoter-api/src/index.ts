@@ -1,11 +1,17 @@
 import { serve } from "@hono/node-server";
+import type { PromoterData } from "@prisma/client";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { streamSSE } from "hono/streaming";
 import { validator } from "hono/validator";
 import { z } from "zod";
 import { prisma } from "./prisma.js";
 import { addManualJob, addScheduledJob, removeScheduledJob } from "./queue.js";
 
 const app = new Hono();
+app.use(cors());
+
+export const promoterMap = new Map<string, PromoterData>();
 
 const promoterSchema = z
   .object({
@@ -195,6 +201,28 @@ app.get("/manual-run/:id", async (c) => {
   const { id } = c.req.param();
   await addManualJob(id);
   return c.json({ message: "Manual run added" });
+});
+
+app.get("/sse/:id", async (c) => {
+  const id = c.req.param("id");
+
+  return streamSSE(c, async (stream) => {
+    while (true) {
+      // get the promoter data by promoter id
+      const promoterData = promoterMap.get(id);
+      if (promoterData) {
+        await stream.writeSSE({
+          data: JSON.stringify(promoterData),
+          event: "p-update",
+          id: promoterData.id,
+        });
+
+        // delete the promoter data from the map
+        promoterMap.delete(id);
+      }
+      await stream.sleep(1000);
+    }
+  });
 });
 
 app.notFound((c) => {

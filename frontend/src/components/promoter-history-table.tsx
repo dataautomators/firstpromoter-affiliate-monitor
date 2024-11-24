@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface HistoryEntry {
   id: string;
@@ -30,11 +31,34 @@ interface HistoryEntry {
 
 interface PromoterHistoryTableProps {
   history: HistoryEntry[];
+  promoterId: string;
 }
 
 export default function PromoterHistoryTable({
   history,
+  promoterId,
 }: PromoterHistoryTableProps) {
+  const [historyData, setHistoryData] = useState<HistoryEntry[]>(history);
+
+  useEffect(() => {
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_URL}/sse/${promoterId}`
+    );
+    eventSource.addEventListener("p-update", (event) => {
+      const data = JSON.parse(event.data);
+      setHistoryData((prev) => [data, ...prev]);
+    });
+
+    eventSource.onerror = (event) => {
+      console.error("EventSource failed:", event);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
   return (
     <Table>
       <TableHeader>
@@ -48,7 +72,7 @@ export default function PromoterHistoryTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {history.map((entry) => (
+        {historyData.map((entry) => (
           <TableRow key={entry.id}>
             <TableCell>${entry.unpaid.toFixed(2)}</TableCell>
             <TableCell>{entry.referral}</TableCell>

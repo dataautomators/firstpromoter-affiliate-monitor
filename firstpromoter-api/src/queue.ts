@@ -1,4 +1,5 @@
 import { Job, Queue, Worker } from "bullmq";
+import { promoterMap } from "./index.js";
 import { prisma } from "./prisma.js";
 import { connection } from "./redis.js";
 import { getData, login, ScraperError } from "./scraper.js";
@@ -51,7 +52,7 @@ const worker = new Worker(
       const promoterData = await getData(accessToken!, companyHost);
 
       // Create promoter data
-      await prisma.promoterData.create({
+      const savedPromoterData = await prisma.promoterData.create({
         data: { ...promoterData, promoterId: id },
       });
 
@@ -62,11 +63,13 @@ const worker = new Worker(
           body: JSON.stringify({ id }),
         });
       }
+
+      promoterMap.set(id, savedPromoterData);
     } catch (error) {
       console.error(error);
       const failedMessage =
         error instanceof ScraperError ? error.message : String(error);
-      await prisma.promoterData.create({
+      const promoterData = await prisma.promoterData.create({
         data: {
           failedMessage: failedMessage || "Unknown error",
           promoterId: id,
@@ -79,6 +82,8 @@ const worker = new Worker(
           body: JSON.stringify({ id }),
         });
       }
+
+      promoterMap.set(id, promoterData);
     }
   },
   { connection }

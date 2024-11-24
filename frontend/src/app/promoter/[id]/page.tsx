@@ -66,7 +66,7 @@ export default async function PromoterPage({
           <CardTitle className="text-2xl font-bold">Historical Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <PromoterHistoryTable history={promoter.data} />
+          <PromoterHistoryTable history={promoter.data} promoterId={id} />
         </CardContent>
       </Card>
     </div>
