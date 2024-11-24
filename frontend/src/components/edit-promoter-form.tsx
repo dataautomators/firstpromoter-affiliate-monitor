@@ -54,7 +54,7 @@ export default function EditPromoterForm({
       form.reset();
       toast({
         title: "Success",
-        description: "Promoter added successfully",
+        description: "Successfully saved the changes.",
       });
     } else {
       toast({
