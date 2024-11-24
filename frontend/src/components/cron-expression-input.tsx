@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { validateCronSchedule } from "@/lib/validateCron";
 import { Info } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface CronExpressionInputProps {
   value: string;
@@ -47,14 +47,6 @@ export function CronExpressionInput({
   const [cronExpression, setCronExpression] = useState(value);
   const [isValid, setIsValid] = useState(true);
 
-  useEffect(() => {
-    setCronExpression(value);
-    const matchingOption = scheduleOptions.find(
-      (option) => option.value === value
-    );
-    setScheduleType(matchingOption ? matchingOption.value : "custom");
-  }, [value]);
-
   const handleScheduleTypeChange = (newValue: string) => {
     setScheduleType(newValue);
     if (newValue !== "custom") {
@@ -65,9 +57,17 @@ export function CronExpressionInput({
 
   const handleCronExpressionChange = (newValue: string) => {
     setCronExpression(newValue);
-    setScheduleType("custom");
-    setIsValid(validateCronSchedule(newValue));
-    if (isValid) {
+    const isValidExpression = validateCronSchedule(newValue);
+    setIsValid(isValidExpression);
+
+    // Check if the expression matches any predefined schedule
+    const matchingOption = scheduleOptions.find(
+      (option) => option.value === newValue && option.value !== "custom"
+    );
+    setScheduleType(matchingOption ? matchingOption.value : "custom");
+
+    // Only call onChange if the expression is valid
+    if (isValidExpression) {
       onChange(newValue);
     }
   };

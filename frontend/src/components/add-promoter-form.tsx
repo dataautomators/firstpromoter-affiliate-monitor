@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
+import { convertCronToUTC, validateCronSchedule } from "@/lib/validateCron";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -49,6 +50,15 @@ export default function AddPromoterForm() {
     if (values.manualRun) {
       values.schedule = ""; // Disable schedule
     }
+
+    // Convert cron to UTC
+    if (values.schedule) {
+      const utcCron = convertCronToUTC(values.schedule);
+      if (validateCronSchedule(utcCron)) {
+        values.schedule = utcCron;
+      }
+    }
+
     const result = await addPromoter(values);
     if (result.success) {
       form.reset();

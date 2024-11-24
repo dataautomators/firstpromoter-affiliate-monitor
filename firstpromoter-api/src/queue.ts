@@ -85,6 +85,7 @@ export const addScheduledJob = async (id: string, schedule: string) => {
       `scheduled-${id}`,
       {
         pattern: schedule,
+        utc: true,
       },
       {
         data: { id },

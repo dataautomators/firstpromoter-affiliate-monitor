@@ -5,3 +5,28 @@ export const validateCronSchedule = (schedule: string) => {
 
   return cronRegex.test(schedule);
 };
+
+export const convertCronToUTC = (cronExpression: string) => {
+  // Get device's UTC offset in hours
+  const offsetMinutes = new Date().getTimezoneOffset();
+  const offsetHours = -offsetMinutes / 60; // Convert to hours and invert (getTimezoneOffset returns opposite sign)
+
+  // Split cron expression into parts
+  const [minute, hour, ...rest] = cronExpression.split(" ");
+
+  // Convert hour to number and adjust for UTC
+  let newHour = parseInt(hour) - offsetHours;
+
+  // Handle day wraparound
+  if (newHour < 0) {
+    newHour = 24 + newHour;
+  } else if (newHour > 23) {
+    newHour = newHour - 24;
+  }
+
+  // Format hour back to string, ensuring two digits
+  const formattedHour = Math.floor(newHour).toString().padStart(2, "0");
+
+  // Return new cron expression
+  return `${minute} ${formattedHour} ${rest.join(" ")}`;
+};
