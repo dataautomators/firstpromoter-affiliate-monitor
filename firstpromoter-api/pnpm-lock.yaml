@@ -15,8 +15,8 @@ importers:
         specifier: 5.22.0
         version: 5.22.0(prisma@5.22.0)
       bullmq:
-        specifier: ^5.28.2
-        version: 5.28.2
+        specifier: ^5.29.1
+        version: 5.29.1
       hono:
         specifier: ^4.6.11
         version: 4.6.11
@@ -249,8 +249,8 @@ packages:
   '@types/node@20.17.6':
     resolution: {integrity: sha512-VEI7OdvK2wP7XHnsuXbAJnEpEkF6NjSN45QJlL4VGqZSXsnicpesdTWsg9RISeSdYd3yeRj/y3k5KGjUXYnFwQ==}
 
-  bullmq@5.28.2:
-    resolution: {integrity: sha512-2F94CJnOKP2kyf29v8bxpNNyF7IsG+z0RY80gP7dAvUprcEbb3CAvyCKMcbkHeF/kBKkcJCNQOlVY/+JY8dsUQ==}
+  bullmq@5.29.1:
+    resolution: {integrity: sha512-TZWiwRlPnpaN+Qwh4D8IQf2cYLpkiDX1LbaaWEabc6y37ojIttWOSynxDewpVHyW233LssSIC4+aLMSvAjtpmg==}
 
   cluster-key-slot@1.1.2:
     resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
@@ -494,7 +494,7 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  bullmq@5.28.2:
+  bullmq@5.29.1:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.4.1
