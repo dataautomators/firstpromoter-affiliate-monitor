@@ -48,7 +48,7 @@ export default async function PromoterTable() {
                 <Link href={`/promoter/${promoter.id}`}>{promoter.source}</Link>
               </TableCell>
               <TableCell>{promoter.data[0]?.referral || 0}</TableCell>
-              <TableCell>{promoter.data[0]?.unpaid || 0}$</TableCell>
+              <TableCell>${promoter.data[0]?.unpaid / 100 || 0}</TableCell>
               <TableCell>{promoter.data[0]?.clicks || 0}</TableCell>
               <TableCell>{promoter.data[0]?.customers || 0}</TableCell>
               <TableCell className="flex gap-2">

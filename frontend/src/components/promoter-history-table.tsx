@@ -44,6 +44,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useSSE } from "@/hooks/useSSE";
+import { usePromoterStore } from "@/store/promoter-store";
+
 export interface HistoryEntry {
   id: string;
   unpaid: number;
@@ -53,6 +56,7 @@ export interface HistoryEntry {
   createdAt: string;
   status: "SUCCESS" | "FAILED";
   failedMessage?: string;
+  promoterId: string;
 }
 
 export const columns: ColumnDef<HistoryEntry>[] = [
@@ -76,7 +80,7 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("unpaid"));
+      const amount = parseFloat(row.getValue("unpaid")) / 100;
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -220,11 +224,24 @@ export const columns: ColumnDef<HistoryEntry>[] = [
 
 export default function PromoterHistoryTable({
   history,
-  id,
+  promoterId,
+  userId,
 }: {
   history: HistoryEntry[];
-  id: string;
+  promoterId: string;
+  userId: string;
 }) {
+  const stateHistory = usePromoterStore((state) => state.history);
+  const { setInitialHistory } = usePromoterStore();
+
+  useEffect(() => {
+    if (history) {
+      setInitialHistory(promoterId, history);
+    }
+  }, [history, promoterId, setInitialHistory]);
+
+  useSSE(promoterId, userId);
+
   const [data, setData] = useState(history);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -236,24 +253,10 @@ export default function PromoterHistoryTable({
   });
 
   useEffect(() => {
-    const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/sse/${id}`
-    );
-
-    eventSource.addEventListener("p-update", (event) => {
-      const newData = JSON.parse(event.data) as HistoryEntry;
-      setData((prev) => [newData, ...prev]);
-    });
-
-    eventSource.onerror = (error) => {
-      console.error("SSE Error:", error);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [id]);
+    if (stateHistory[promoterId]) {
+      setData(stateHistory[promoterId]);
+    }
+  }, [promoterId, stateHistory]);
 
   const table = useReactTable({
     data,

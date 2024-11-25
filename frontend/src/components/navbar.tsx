@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function Navbar() {
@@ -9,6 +10,14 @@ export default function Navbar() {
             FirstPromoter Dashboard
           </h1>
         </Link>
+
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </div>
     </nav>
   );

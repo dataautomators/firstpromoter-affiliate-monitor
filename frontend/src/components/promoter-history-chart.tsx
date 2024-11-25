@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { usePromoterStore } from "@/store/promoter-store";
 import {
   differenceInDays,
   format,
@@ -16,7 +17,7 @@ import {
   parseISO,
   subMonths,
 } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import {
   Area,
@@ -32,7 +33,8 @@ import { DatePickerWithRange } from "./date-range-picker";
 import { HistoryEntry } from "./promoter-history-table";
 
 interface PromoterHistoryChartProps {
-  data: HistoryEntry[];
+  historyData: HistoryEntry[];
+  promoterId: string;
 }
 
 const metrics = [
@@ -42,7 +44,10 @@ const metrics = [
   { key: "customers", label: "Customers", color: "#ff7300" },
 ];
 
-export function PromoterHistoryChart({ data }: PromoterHistoryChartProps) {
+export function PromoterHistoryChart({
+  historyData,
+  promoterId,
+}: PromoterHistoryChartProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
     to: new Date(),
@@ -50,6 +55,20 @@ export function PromoterHistoryChart({ data }: PromoterHistoryChartProps) {
   const [visibleMetrics, setVisibleMetrics] = useState(
     metrics.map((m) => m.key)
   );
+
+  const [data, setData] = useState(historyData);
+
+  const stateHistory = usePromoterStore((state) => state.history[promoterId]);
+
+  useEffect(() => {
+    if (stateHistory) {
+      setData(stateHistory);
+      setDateRange({
+        from: subMonths(new Date(), 1),
+        to: new Date(),
+      });
+    }
+  }, [promoterId, stateHistory]);
 
   const filteredData = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to) return [];
@@ -74,10 +93,6 @@ export function PromoterHistoryChart({ data }: PromoterHistoryChartProps) {
     return sortedData.map((entry) => ({
       ...entry,
       unpaid: entry.unpaid / 100,
-      //   unpaid: new Intl.NumberFormat("en-US", {
-      //     style: "currency",
-      //     currency: "USD",
-      //   }).format(entry.unpaid),
       originalDate: entry.createdAt, // Keep original date for tooltip
       createdAt: parseISO(entry.createdAt).getTime(), // Convert to timestamp for x-axis
     }));
@@ -121,73 +136,80 @@ export function PromoterHistoryChart({ data }: PromoterHistoryChartProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>Historical Performance</CardTitle>
-            <CardDescription>Trends of key metrics over time</CardDescription>
-          </div>
-          <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-end space-x-4 mb-4">
-          {metrics.map((metric) => (
-            <div key={metric.key} className="flex items-center space-x-2">
-              <Checkbox
-                id={metric.key}
-                checked={visibleMetrics.includes(metric.key)}
-                onCheckedChange={() => toggleMetric(metric.key)}
-              />
-              <Label htmlFor={metric.key}>{metric.label}</Label>
+    <>
+      {/* <SSEListener
+        onNewData={onNewHistory}
+        promoterId={promoterId}
+        userId={userId}
+      /> */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Historical Performance</CardTitle>
+              <CardDescription>Trends of key metrics over time</CardDescription>
             </div>
-          ))}
-        </div>
-        <ResponsiveContainer width="100%" height={400}>
-          <AreaChart
-            data={filteredData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="createdAt"
-              type="number"
-              domain={["auto", "auto"]}
-              tickFormatter={formatXAxis}
-              interval={calculateInterval()}
-              angle={-45}
-              textAnchor="end"
-              height={60}
-            />
-            <YAxis />
-            <Tooltip
-              labelFormatter={formatTooltipDate}
-              formatter={(value, name) => {
-                if (name === "Unpaid") {
-                  return [`$${value}`, "Unpaid"];
-                }
-                return [value, name];
-              }}
-            />
-            <Legend verticalAlign="top" />
-            {metrics.map(
-              (metric) =>
-                visibleMetrics.includes(metric.key) && (
-                  <Area
-                    key={metric.key}
-                    type="monotone"
-                    dataKey={metric.key}
-                    name={metric.label}
-                    stroke={metric.color}
-                    fill={metric.color}
-                    fillOpacity={0.3}
-                  />
-                )
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
+            <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-end space-x-4 mb-4">
+            {metrics.map((metric) => (
+              <div key={metric.key} className="flex items-center space-x-2">
+                <Checkbox
+                  id={metric.key}
+                  checked={visibleMetrics.includes(metric.key)}
+                  onCheckedChange={() => toggleMetric(metric.key)}
+                />
+                <Label htmlFor={metric.key}>{metric.label}</Label>
+              </div>
+            ))}
+          </div>
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart
+              data={filteredData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="createdAt"
+                type="number"
+                domain={["auto", "auto"]}
+                tickFormatter={formatXAxis}
+                interval={calculateInterval()}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis />
+              <Tooltip
+                labelFormatter={formatTooltipDate}
+                formatter={(value, name) => {
+                  if (name === "Unpaid") {
+                    return [`$${value}`, "Unpaid"];
+                  }
+                  return [value, name];
+                }}
+              />
+              <Legend verticalAlign="top" />
+              {metrics.map(
+                (metric) =>
+                  visibleMetrics.includes(metric.key) && (
+                    <Area
+                      key={metric.key}
+                      type="monotone"
+                      dataKey={metric.key}
+                      name={metric.label}
+                      stroke={metric.color}
+                      fill={metric.color}
+                      fillOpacity={0.3}
+                    />
+                  )
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </>
   );
 }

@@ -3,13 +3,18 @@
 import type { Promoter } from "@/components/promoter-table";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const fetchPromoters = async () => {
+  const { userId } = await auth();
   const res = await fetch(`${API_URL}/promoters`, {
     cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${userId}`,
+    },
   });
   if (!res.ok) throw new Error("Failed to fetch promoters");
   return res.json();
@@ -18,8 +23,12 @@ export const fetchPromoters = async () => {
 export const fetchPromoter = async (
   id: string
 ): Promise<Promoter | { error: string }> => {
+  const { userId } = await auth();
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${userId}`,
+    },
   });
   if (!res.ok) {
     const message = await res.json();
@@ -35,10 +44,13 @@ export const addPromoter = async (values: PromoterSchema) => {
     return { error: "Invalid input" };
   }
 
+  const { userId } = await auth();
+
   const res = await fetch(`${API_URL}/promoters`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
     },
     body: JSON.stringify(validatedFields.data),
   });
@@ -79,10 +91,13 @@ export const updatePromoter = async (
     return acc;
   }, {} as Record<string, unknown>);
 
+  const { userId } = await auth();
+
   const response = await fetch(`${API_URL}/promoters/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
     },
     body: JSON.stringify(changedData),
   });
@@ -98,8 +113,12 @@ export const updatePromoter = async (
 };
 
 export const deletePromoter = async (id: string) => {
+  const { userId } = await auth();
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${userId}`,
+    },
   });
 
   if (!res.ok) throw new Error("Failed to delete promoter");
@@ -108,7 +127,12 @@ export const deletePromoter = async (id: string) => {
 };
 
 export const manualRun = async (id: string) => {
-  const res = await fetch(`${API_URL}/manual-run/${id}`);
+  const { userId } = await auth();
+  const res = await fetch(`${API_URL}/manual-run/${id}`, {
+    headers: {
+      Authorization: `Bearer ${userId}`,
+    },
+  });
   if (!res.ok) {
     return { error: "Failed to run manual job" };
   }

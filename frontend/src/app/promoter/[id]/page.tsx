@@ -3,6 +3,7 @@ import { PromoterHistoryChart } from "@/components/promoter-history-chart";
 import PromoterHistoryTable from "@/components/promoter-history-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { auth } from "@clerk/nextjs/server";
 import { Pencil, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,6 +14,8 @@ export default async function PromoterPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const { userId } = await auth();
+
   const promoter = await fetchPromoter(id);
 
   const handleManualRun = async () => {
@@ -62,14 +65,18 @@ export default async function PromoterPage({
         </CardContent>
       </Card>
 
-      <PromoterHistoryChart data={promoter.data} />
+      <PromoterHistoryChart historyData={promoter.data} promoterId={id} />
 
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Historical Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <PromoterHistoryTable history={promoter.data} id={id} />
+          <PromoterHistoryTable
+            history={promoter.data}
+            promoterId={id}
+            userId={userId as string}
+          />
         </CardContent>
       </Card>
     </div>
