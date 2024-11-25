@@ -10,6 +10,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String     @id @default(cuid())
+  email     String
+  name      String
+  clerkId   String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  promoters Promoter[]
+}
+
 model Promoter {
   id           String   @id @default(cuid())
   source       String
@@ -25,8 +35,8 @@ model Promoter {
   updatedAt    DateTime @updatedAt
 
   userId String
-
-  data PromoterData[]
+  user   User           @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  data   PromoterData[]
 }
 
 model PromoterData {

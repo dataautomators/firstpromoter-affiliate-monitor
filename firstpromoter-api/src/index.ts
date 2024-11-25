@@ -6,8 +6,10 @@ import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { streamSSE } from "hono/streaming";
 import { validator } from "hono/validator";
+import { Webhook } from "svix";
 import { z } from "zod";
 import { prisma } from "./prisma.js";
+
 import { addManualJob, addScheduledJob, removeScheduledJob } from "./queue.js";
 
 type Variables = {
@@ -256,6 +258,111 @@ app.get("/sse/:id", async (c) => {
       await stream.sleep(1000);
     }
   });
+});
+
+app.post("/webhook", async (c) => {
+  const SIGNING_SECRET = process.env.SIGNING_SECRET;
+  if (!SIGNING_SECRET) {
+    return c.json(
+      {
+        message:
+          "Error: Please add SIGNING_SECRET from Clerk Dashboard to .env",
+      },
+      500
+    );
+  }
+  const wh = new Webhook(SIGNING_SECRET);
+
+  const payload = await c.req.text();
+
+  const svix_id = c.req.header("svix-id");
+  const svix_timestamp = c.req.header("svix-timestamp");
+  const svix_signature = c.req.header("svix-signature");
+
+  // If there are no headers, error out
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return c.json(
+      {
+        success: false,
+        message: "Error: Missing svix headers",
+      },
+      400
+    );
+  }
+
+  let evt;
+
+  // Attempt to verify the incoming webhook
+  // If successful, the payload will be available from 'evt'
+  // If verification fails, error out and return error code
+  try {
+    evt = wh.verify(payload, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.log("Error: Could not verify webhook:", err.message);
+      return c.json(
+        {
+          success: false,
+          message: err.message,
+        },
+        400
+      );
+    }
+  }
+
+  // Do something with payload
+  // For this guide, log payload to console
+  const { id } = evt.data;
+  const eventType = evt.type;
+  console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
+  const createData = async () => {
+    const { first_name, last_name, email_addresses } = evt.data;
+    const fullName = `${first_name}${last_name ? ` ${last_name}` : ""}`;
+    return {
+      clerkId: id,
+      name: fullName,
+      email: email_addresses[0].email_address,
+    };
+  };
+  switch (eventType) {
+    case "user.created":
+      {
+        const data = await createData();
+        await prisma.user.create({ data }).catch((err) => {
+          console.log("Error creating user:", err.message);
+        });
+      }
+      break;
+    case "user.updated":
+      {
+        const data = await createData();
+        await prisma.user
+          .update({ where: { clerkId: id }, data })
+          .catch((err) => {
+            console.log("Error updating user:", err.message);
+          });
+      }
+      break;
+    case "user.deleted":
+      {
+        await prisma.user.delete({ where: { clerkId: id } }).catch((err) => {
+          console.log("Error deleting user:", err.message);
+        });
+      }
+      break;
+  }
+
+  return c.json(
+    {
+      success: true,
+      message: "Webhook received",
+    },
+    200
+  );
 });
 
 app.notFound((c) => {
