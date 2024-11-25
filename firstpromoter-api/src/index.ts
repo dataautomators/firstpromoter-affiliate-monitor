@@ -2,13 +2,17 @@ import { serve } from "@hono/node-server";
 import type { PromoterData } from "@prisma/client";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createMiddleware } from "hono/factory";
 import { streamSSE } from "hono/streaming";
 import { validator } from "hono/validator";
 import { z } from "zod";
 import { prisma } from "./prisma.js";
 import { addManualJob, addScheduledJob, removeScheduledJob } from "./queue.js";
 
-const app = new Hono();
+type Variables = {
+  userId: string;
+};
+const app = new Hono<{ Variables: Variables }>();
 app.use(cors());
 
 export const promoterMap = new Map<string, PromoterData>();
@@ -57,8 +61,26 @@ const updatePromoterSchema = z
     path: ["schedule", "manualRun"],
   });
 
+const checkAuthMiddleware = createMiddleware(async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  const userId = authHeader.split(" ")[1];
+  c.set("userId", userId);
+  await next();
+});
+
+app.use("/promoters/*", checkAuthMiddleware);
+
 app.get("/promoters", async (c) => {
+  const userId = c.get("userId");
+
   const promoters = await prisma.promoter.findMany({
+    where: {
+      userId,
+    },
     include: {
       data: {
         orderBy: {
@@ -83,6 +105,8 @@ app.post(
     return result.data;
   }),
   async (c) => {
+    const userId = c.get("userId");
+
     const { source, email, password, schedule, isEnabled, manualRun } =
       c.req.valid("json");
     const sourceUrl = new URL(source);
@@ -90,6 +114,7 @@ app.post(
 
     const newPromoter = await prisma.promoter.create({
       data: {
+        userId,
         source,
         email,
         password,
@@ -131,18 +156,24 @@ app.patch(
     const { id } = c.req.param();
     const { source, email, password, schedule, isEnabled, manualRun } =
       c.req.valid("json");
-    const previousPromoter = await prisma.promoter.findUnique({
-      where: { id },
+    const userId = c.get("userId");
+
+    const previousPromoter = await prisma.promoter.findFirst({
+      where: { id, userId },
     });
 
-    let companyHost = previousPromoter?.companyHost;
+    if (!previousPromoter) {
+      return c.json({ message: "Promoter not found" }, 404);
+    }
+
+    let companyHost = previousPromoter.companyHost;
     if (source) {
       const sourceUrl = new URL(source);
       companyHost = sourceUrl.host;
     }
 
     const updatedPromoter = await prisma.promoter.update({
-      where: { id },
+      where: { id, userId },
       data: {
         source,
         email,
@@ -176,15 +207,17 @@ app.patch(
 
 app.delete("/promoters/:id", async (c) => {
   const { id } = c.req.param();
-  await prisma.promoter.delete({ where: { id } });
+  const userId = c.get("userId");
+  await prisma.promoter.delete({ where: { id, userId } });
   await removeScheduledJob(id);
   return c.json({ message: "Promoter deleted" });
 });
 
 app.get("/promoters/:id", async (c) => {
   const { id } = c.req.param();
-  const promoter = await prisma.promoter.findUnique({
-    where: { id },
+  const userId = c.get("userId");
+  const promoter = await prisma.promoter.findFirst({
+    where: { id, userId },
     include: {
       data: { orderBy: { createdAt: "desc" } },
     },
@@ -197,19 +230,21 @@ app.get("/promoters/:id", async (c) => {
   return c.json(promoter);
 });
 
-app.get("/manual-run/:id", async (c) => {
+app.get("/manual-run/:id", checkAuthMiddleware, async (c) => {
   const { id } = c.req.param();
+  const userId = c.get("userId");
   await addManualJob(id);
   return c.json({ message: "Manual run added" });
 });
 
 app.get("/sse/:id", async (c) => {
   const id = c.req.param("id");
+  const userId = c.req.query("userId");
 
   return streamSSE(c, async (stream) => {
     while (true) {
       // get the promoter data by promoter id
-      const promoterData = promoterMap.get(id);
+      const promoterData = promoterMap.get(`${id}-${userId}`);
       if (promoterData) {
         await stream.writeSSE({
           data: JSON.stringify(promoterData),
@@ -218,7 +253,7 @@ app.get("/sse/:id", async (c) => {
         });
 
         // delete the promoter data from the map
-        promoterMap.delete(id);
+        promoterMap.delete(`${id}-${userId}`);
       }
       await stream.sleep(1000);
     }

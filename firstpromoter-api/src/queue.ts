@@ -26,7 +26,7 @@ const worker = new Worker(
       if (!promoter) {
         throw new Error("Promoter not found");
       }
-      const { email, password, companyHost, source } = promoter;
+      const { email, password, companyHost, source, userId } = promoter;
       let { accessToken } = promoter;
 
       console.log("Processing promoter", source);
@@ -56,7 +56,7 @@ const worker = new Worker(
         data: { ...promoterData, promoterId: id },
       });
 
-      promoterMap.set(id, savedPromoterData);
+      promoterMap.set(`${id}-${userId}`, savedPromoterData);
     } catch (error) {
       console.error(error);
       const failedMessage =
@@ -71,9 +71,14 @@ const worker = new Worker(
           promoterId: id,
           status: "FAILED",
         },
+        include: {
+          promoter: true,
+        },
       });
 
-      promoterMap.set(id, promoterData);
+      const { userId } = promoterData.promoter;
+
+      promoterMap.set(`${id}-${userId}`, promoterData);
     }
   },
   { connection }
