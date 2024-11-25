@@ -1,6 +1,7 @@
 export class ScraperError extends Error {}
 
-const baseUrl = "https://api.fprom.io/api/affiliate/v1";
+const baseUrl =
+  process.env.MOCK_API_URL || "https://api.fprom.io/api/affiliate/v1";
 
 export const login = async (
   email: string,
