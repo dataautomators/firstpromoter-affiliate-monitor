@@ -2,6 +2,7 @@ import { Job, Queue, Worker } from "bullmq";
 import { promoterMap } from "./index.js";
 import { prisma } from "./prisma.js";
 import { connection } from "./redis.js";
+import { sendReferralBalanceEmail } from "./resend.js";
 import { getData, login, ScraperError } from "./scraper.js";
 
 export const jobQueue = new Queue<{ id: string }>("promoter", {
@@ -22,7 +23,18 @@ const worker = new Worker(
   async (job: Job<{ id: string }>) => {
     const { id } = job.data;
     try {
-      const promoter = await prisma.promoter.findUnique({ where: { id } });
+      const promoter = await prisma.promoter.findUnique({
+        where: { id },
+        include: {
+          data: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+          },
+          user: true,
+        },
+      });
       if (!promoter) {
         throw new Error("Promoter not found");
       }
@@ -50,6 +62,27 @@ const worker = new Worker(
 
       // Get data
       const promoterData = await getData(accessToken!, companyHost);
+
+      // Send email if balance increased
+      if (promoter.data.length > 0 && promoter.data[0].status === "SUCCESS") {
+        if (promoterData.unpaid > promoter.data[0].unpaid) {
+          const formattedUnpaid = (promoterData.unpaid / 100).toFixed(2);
+          const formattedPreviousUnpaid = (
+            promoter.data[0].unpaid / 100
+          ).toFixed(2);
+          const increaseAmount = (
+            parseFloat(formattedUnpaid) - parseFloat(formattedPreviousUnpaid)
+          ).toFixed(2);
+          await sendReferralBalanceEmail({
+            to: email,
+            userName: promoter.user.name,
+            host: companyHost,
+            newBalance: formattedUnpaid,
+            previousBalance: formattedPreviousUnpaid,
+            increaseAmount,
+          });
+        }
+      }
 
       // Create promoter data
       const savedPromoterData = await prisma.promoterData.create({
