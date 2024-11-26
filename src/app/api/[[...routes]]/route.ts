@@ -1,65 +1,24 @@
-import { serve } from "@hono/node-server";
-import type { PromoterData } from "@prisma/client";
-import cron from "cron-validate";
+import { prisma } from "@/lib/prisma";
+import { promoterSchema, updatePromoterSchema } from "@/lib/schema";
+import { promoterMap } from "@/scraper/promoterMap";
+import {
+  addManualJob,
+  addScheduledJob,
+  removeScheduledJob,
+} from "@/scraper/queue";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { streamSSE } from "hono/streaming";
 import { validator } from "hono/validator";
+import { handle } from "hono/vercel";
 import { Webhook } from "svix";
-import { z } from "zod";
-import { prisma } from "./prisma.js";
 
-import { addManualJob, addScheduledJob, removeScheduledJob } from "./queue.js";
+// export const runtime = "edge";
 
 type Variables = {
   userId: string;
 };
-const app = new Hono<{ Variables: Variables }>();
-app.use(cors());
-
-export const promoterMap = new Map<string, PromoterData>();
-
-const promoterSchema = z
-  .object({
-    source: z.string().url("Please provide a valid URL"),
-    email: z.string().email("Please provide a valid email"),
-    password: z.string({ message: "Please provide a password" }),
-    schedule: z.string().optional(),
-    isEnabled: z.boolean().optional(),
-    manualRun: z.boolean().optional(),
-  })
-  .refine((data) => data.schedule || data.manualRun, {
-    message: "Either schedule or manualRun must be provided",
-    path: ["schedule", "manualRun"],
-  })
-  .refine((data) => !data.schedule || validateCronSchedule(data.schedule), {
-    message: "Invalid cron schedule",
-    path: ["schedule"],
-  });
-
-const validateCronSchedule = (schedule: string) => {
-  const cronResult = cron(schedule);
-  return cronResult.isValid();
-};
-
-const updatePromoterSchema = z
-  .object({
-    source: z.string().url().optional(),
-    email: z.string().email().optional(),
-    password: z.string().optional(),
-    schedule: z.string().optional(),
-    isEnabled: z.boolean().optional(),
-    manualRun: z.boolean().optional(),
-  })
-  .refine((data) => !data.schedule || validateCronSchedule(data.schedule), {
-    message: "Invalid cron schedule",
-    path: ["schedule"],
-  })
-  .refine((data) => !(data.schedule && data.manualRun), {
-    message: "Both schedule and manualRun cannot be provided",
-    path: ["schedule", "manualRun"],
-  });
+const app = new Hono<{ Variables: Variables }>().basePath("/api");
 
 const checkAuthMiddleware = createMiddleware(async (c, next) => {
   const authHeader = c.req.header("Authorization");
@@ -290,7 +249,19 @@ app.post("/webhook", async (c) => {
     );
   }
 
-  let evt;
+  type Event = {
+    data: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      email_addresses: {
+        email_address: string;
+      }[];
+    };
+    type: string;
+  };
+
+  let evt: Event | null = null;
 
   // Attempt to verify the incoming webhook
   // If successful, the payload will be available from 'evt'
@@ -300,7 +271,7 @@ app.post("/webhook", async (c) => {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    });
+    }) as Event;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.log("Error: Could not verify webhook:", err.message);
@@ -316,6 +287,16 @@ app.post("/webhook", async (c) => {
 
   // Do something with payload
   // For this guide, log payload to console
+  if (!evt) {
+    return c.json(
+      {
+        success: false,
+        message: "Error: Webhook verification failed",
+      },
+      400
+    );
+  }
+
   const { id } = evt.data;
   const eventType = evt.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
@@ -369,10 +350,14 @@ app.notFound((c) => {
   return c.json({ message: "Not found" }, 404);
 });
 
-const port = Number(process.env.PORT) || 4000;
-console.log(`Server is running on http://localhost:${port}`);
+const handler = handle(app);
 
-serve({
-  fetch: app.fetch,
-  port,
-});
+export {
+  handler as DELETE,
+  handler as GET,
+  handler as HEAD,
+  handler as OPTIONS,
+  handler as PATCH,
+  handler as POST,
+  handler as PUT,
+};

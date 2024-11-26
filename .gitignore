@@ -34,6 +34,7 @@ yarn-error.log*
 .env.local
 .env.production
 
+
 # vercel
 .vercel
 
@@ -41,7 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# mock-api
-mock-api/
-
+# prisma
 *.db

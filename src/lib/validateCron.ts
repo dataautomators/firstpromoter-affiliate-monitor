@@ -49,6 +49,10 @@ export const convertCronToUTC = (cronExpression: string): string => {
   // eslint-disable-next-line prefer-const
   let [minute, hour, dayOfMonth, month, dayOfWeek]: (string | number)[] =
     cronParts.map((part: string, index: number) => {
+      // Special handling for expressions with */
+      if (part.includes("*/")) return part;
+      // Special handling for expressions with other special characters
+      if (part.includes(",") || part.includes("-")) return part;
       if (part === "*") return part;
 
       const num = parseInt(part, 10);
@@ -77,7 +81,7 @@ export const convertCronToUTC = (cronExpression: string): string => {
     });
 
   // Adjust minutes and handle overflow/underflow
-  if (minute !== "*") {
+  if (minute !== "*" && !String(minute).includes("*/")) {
     const newMinute = (minute as number) + (offsetMinutes % 60);
     if (newMinute < 0) {
       minute = newMinute + 60;
@@ -85,6 +89,8 @@ export const convertCronToUTC = (cronExpression: string): string => {
     } else if (newMinute >= 60) {
       minute = newMinute - 60;
       hour = hour === "*" ? "*" : (parseInt(hour as string) + 1) % 24;
+    } else {
+      minute = newMinute;
     }
   }
 
@@ -205,6 +211,10 @@ export const convertCronFromUTC = (cronExpression: string): string => {
   // eslint-disable-next-line prefer-const
   let [minute, hour, dayOfMonth, month, dayOfWeek]: (string | number)[] =
     cronParts.map((part: string, index: number) => {
+      // Special handling for expressions with */
+      if (part.includes("*/")) return part;
+      // Special handling for expressions with other special characters
+      if (part.includes(",") || part.includes("-")) return part;
       if (part === "*") return part;
 
       const num = parseInt(part, 10);
@@ -233,7 +243,7 @@ export const convertCronFromUTC = (cronExpression: string): string => {
     });
 
   // Adjust minutes and handle overflow/underflow
-  if (minute !== "*") {
+  if (minute !== "*" && !String(minute).includes("*/")) {
     const newMinute = (minute as number) + (offsetMinutes % 60);
     if (newMinute < 0) {
       minute = newMinute + 60;

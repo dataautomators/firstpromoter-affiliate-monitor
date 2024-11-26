@@ -1,9 +1,9 @@
+import { prisma } from "@/lib/prisma";
+import { connection } from "@/lib/redis";
+import { sendReferralBalanceEmail } from "@/lib/resend";
+import { promoterMap } from "@/scraper/promoterMap";
+import { getData, login, ScraperError } from "@/scraper/scraper";
 import { Job, Queue, Worker } from "bullmq";
-import { promoterMap } from "./index.js";
-import { prisma } from "./prisma.js";
-import { connection } from "./redis.js";
-import { sendReferralBalanceEmail } from "./resend.js";
-import { getData, login, ScraperError } from "./scraper.js";
 
 export const jobQueue = new Queue<{ id: string }>("promoter", {
   connection,

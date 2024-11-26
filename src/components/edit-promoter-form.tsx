@@ -22,7 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
-import { convertCronToUTC, validateCronSchedule } from "@/lib/validateCron";
+import {
+  convertCronFromUTC,
+  convertCronToUTC,
+  validateCronSchedule,
+} from "@/lib/validateCron";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,9 +45,25 @@ export default function EditPromoterForm({
   const [isManual, setIsManual] = useState(promoter.manualRun);
   const router = useRouter();
 
+  const getSchedule = () => {
+    if (promoter.schedule) {
+      const localCron = convertCronFromUTC(promoter.schedule);
+      console.log("localCron", localCron);
+      console.log("original", promoter.schedule);
+      if (validateCronSchedule(localCron)) {
+        console.log("valid");
+        return localCron;
+      }
+    }
+    return promoter.schedule;
+  };
+
   const form = useForm<PromoterSchema>({
     resolver: zodResolver(promoterSchema),
-    defaultValues: promoter,
+    defaultValues: {
+      ...promoter,
+      schedule: getSchedule(),
+    },
   });
 
   async function onSubmit(values: PromoterSchema) {

@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { ReferralBalanceEmail } from "./email-template.jsx";
+import { ReferralBalanceEmail } from "./email-template";
 
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
