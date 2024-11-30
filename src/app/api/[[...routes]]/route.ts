@@ -1,19 +1,19 @@
+import { messageEmitter } from "@/lib/messageEmitter";
 import { prisma } from "@/lib/prisma";
 import { promoterSchema, updatePromoterSchema } from "@/lib/schema";
-import { promoterMap } from "@/scraper/promoterMap";
 import {
   addManualJob,
   addScheduledJob,
   removeScheduledJob,
 } from "@/scraper/queue";
+import { PromoterData } from "@prisma/client";
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
-import { streamSSE } from "hono/streaming";
 import { validator } from "hono/validator";
 import { handle } from "hono/vercel";
 import { Webhook } from "svix";
 
-// export const runtime = "edge";
+const sseClients = new Map<string, (promoterData: PromoterData) => void>();
 
 type Variables = {
   userId: string;
@@ -200,22 +200,44 @@ app.get("/sse/:id", async (c) => {
   const id = c.req.param("id");
   const userId = c.req.query("userId");
 
-  return streamSSE(c, async (stream) => {
-    while (true) {
-      // get the promoter data by promoter id
-      const promoterData = promoterMap.get(`${id}-${userId}`);
-      if (promoterData) {
-        await stream.writeSSE({
-          data: JSON.stringify(promoterData),
-          event: "p-update",
-          id: promoterData.id,
-        });
+  let controller: ReadableStreamDefaultController<string> | null = null;
 
-        // delete the promoter data from the map
-        promoterMap.delete(`${id}-${userId}`);
-      }
-      await stream.sleep(1000);
-    }
+  const stream = new ReadableStream<string>({
+    start(ctrl) {
+      controller = ctrl;
+      const clientId = Math.random().toString(36).substring(7);
+      console.log("Debug: Setting up client:", clientId);
+
+      const sendSSE = (promoterData: PromoterData) => {
+        if (controller) {
+          console.log("Debug: Sending to client:", clientId, promoterData.id);
+          controller.enqueue(
+            `event: p-update\ndata: ${JSON.stringify(promoterData)}\n\n`
+          );
+        }
+      };
+
+      sseClients.set(clientId, sendSSE);
+      console.log("Debug: Current client count:", sseClients.size);
+
+      messageEmitter.on(`${id}-${userId}`, sendSSE);
+
+      c.req.raw.signal.addEventListener("abort", () => {
+        console.log("Debug: Cleaning up client:", clientId);
+        messageEmitter.removeListener(`${id}-${userId}`, sendSSE);
+        sseClients.delete(clientId);
+        controller?.close();
+        controller = null;
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-open",
+    },
   });
 });
 

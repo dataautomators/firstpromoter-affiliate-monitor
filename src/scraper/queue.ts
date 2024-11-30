@@ -1,7 +1,7 @@
+import { messageEmitter } from "@/lib/messageEmitter";
 import { prisma } from "@/lib/prisma";
 import { connection } from "@/lib/redis";
 import { sendReferralBalanceEmail } from "@/lib/resend";
-import { promoterMap } from "@/scraper/promoterMap";
 import { getData, login, ScraperError } from "@/scraper/scraper";
 import { Job, Queue, Worker } from "bullmq";
 
@@ -35,9 +35,11 @@ const worker = new Worker(
           user: true,
         },
       });
+
       if (!promoter) {
         throw new Error("Promoter not found");
       }
+
       const { email, password, companyHost, source, userId } = promoter;
       let { accessToken } = promoter;
 
@@ -89,7 +91,7 @@ const worker = new Worker(
         data: { ...promoterData, promoterId: id },
       });
 
-      promoterMap.set(`${id}-${userId}`, savedPromoterData);
+      messageEmitter.emit(`${id}-${userId}`, savedPromoterData);
     } catch (error) {
       console.error(error);
       const failedMessage =
@@ -111,7 +113,7 @@ const worker = new Worker(
 
       const { userId } = promoterData.promoter;
 
-      promoterMap.set(`${id}-${userId}`, promoterData);
+      messageEmitter.emit(`${id}-${userId}`, promoterData);
     }
   },
   { connection }
