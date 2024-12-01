@@ -2,31 +2,47 @@ import type { HistoryEntry } from "@/components/promoter-history-table";
 import { create } from "zustand";
 
 interface PromoterStore {
-  history: {
+  tableHistory: {
     [promoterId: string]: HistoryEntry[];
   };
-  data: string[];
-  addHistoryEntry: (promoterId: string, entry: HistoryEntry) => void;
-  setInitialHistory: (promoterId: string, history: HistoryEntry[]) => void;
-  setData: (data: string) => void;
+  chartHistory: {
+    [promoterId: string]: HistoryEntry[];
+  };
+  addTableHistoryEntry: (promoterId: string, entry: HistoryEntry) => void;
+  addChartHistoryEntry: (promoterId: string, entry: HistoryEntry) => void;
+  setInitialTableHistory: (promoterId: string, history: HistoryEntry[]) => void;
+  setInitialChartHistory: (promoterId: string, history: HistoryEntry[]) => void;
 }
 
 export const usePromoterStore = create<PromoterStore>((set) => ({
-  history: {},
-  data: [],
-  addHistoryEntry: (promoterId: string, entry: HistoryEntry) =>
+  tableHistory: {},
+  chartHistory: {},
+  addTableHistoryEntry: (promoterId: string, entry: HistoryEntry) =>
     set((state) => ({
-      history: {
-        ...state.history,
-        [promoterId]: [entry, ...state.history[promoterId]],
+      tableHistory: {
+        ...state.tableHistory,
+        [promoterId]: [entry, ...state.tableHistory[promoterId]],
       },
     })),
-  setInitialHistory: (promoterId: string, history: HistoryEntry[]) =>
+  setInitialTableHistory: (promoterId: string, history: HistoryEntry[]) =>
     set((state) => ({
-      history: {
-        ...state.history,
+      tableHistory: {
+        ...state.tableHistory,
         [promoterId]: history,
       },
     })),
-  setData: (data: string) => set((state) => ({ data: [...state.data, data] })),
+  addChartHistoryEntry: (promoterId: string, entry: HistoryEntry) =>
+    set((state) => ({
+      chartHistory: {
+        ...state.chartHistory,
+        [promoterId]: [entry, ...state.chartHistory[promoterId]],
+      },
+    })),
+  setInitialChartHistory: (promoterId: string, history: HistoryEntry[]) =>
+    set((state) => ({
+      chartHistory: {
+        ...state.chartHistory,
+        [promoterId]: history,
+      },
+    })),
 }));

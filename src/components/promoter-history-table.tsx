@@ -8,8 +8,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -46,6 +44,8 @@ import {
 
 import { useSSE } from "@/hooks/useSSE";
 import { usePromoterStore } from "@/store/promoter-store";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import PromoterPagination from "./promoter-pagination";
 
 export interface HistoryEntry {
   id: string;
@@ -226,31 +226,40 @@ export default function PromoterHistoryTable({
   history,
   promoterId,
   userId,
+  meta,
 }: {
   history: HistoryEntry[];
   promoterId: string;
   userId: string;
+  meta: {
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }) {
-  const stateHistory = usePromoterStore((state) => state.history);
-  const { setInitialHistory } = usePromoterStore();
+  const stateHistory = usePromoterStore((state) => state.tableHistory);
+  const searchParams = useSearchParams();
+  const currentPage = searchParams.get("page") || "1";
+
+  const { setInitialTableHistory } = usePromoterStore();
 
   useEffect(() => {
     if (history) {
-      setInitialHistory(promoterId, history);
+      setInitialTableHistory(promoterId, history);
     }
-  }, [history, promoterId, setInitialHistory]);
+  }, [history, promoterId, setInitialTableHistory]);
 
-  useSSE(promoterId, userId);
+  useSSE(promoterId, userId, "table");
 
   const [data, setData] = useState(history);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [pagination, setPagination] = useState({
-    pageIndex: 0, //initial page index
-    pageSize: 10, //default page size
-  });
+
+  const pathName = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (stateHistory[promoterId]) {
@@ -258,24 +267,32 @@ export default function PromoterHistoryTable({
     }
   }, [promoterId, stateHistory]);
 
+  useEffect(() => {
+    const sortingId = sorting[0]?.id;
+    if (sortingId) {
+      const params = new URLSearchParams(searchParams);
+      params.set("sort", sortingId);
+      params.set("desc", sorting[0]?.desc ? "true" : "false");
+
+      router.push(`${pathName}?${params.toString()}`);
+    }
+  }, [sorting]);
+
   const table = useReactTable({
     data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    manualSorting: true,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination,
     },
   });
 
@@ -359,28 +376,12 @@ export default function PromoterHistoryTable({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-sm ml-auto text-muted-foreground">
-          Page {pagination.pageIndex + 1} of {table.getPageCount()}
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
+      <div className="flex items-center justify-center space-x-2 py-4">
+        <PromoterPagination
+          total={meta.totalCount}
+          currentPage={Number(currentPage)}
+          pageSize={meta.pageSize}
+        />
       </div>
     </div>
   );

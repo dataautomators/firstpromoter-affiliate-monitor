@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useSSE } from "@/hooks/useSSE";
 import { usePromoterStore } from "@/store/promoter-store";
 import {
   differenceInDays,
@@ -35,6 +36,7 @@ import { HistoryEntry } from "./promoter-history-table";
 interface PromoterHistoryChartProps {
   historyData: HistoryEntry[];
   promoterId: string;
+  userId: string;
 }
 
 const metrics = [
@@ -47,6 +49,7 @@ const metrics = [
 export function PromoterHistoryChart({
   historyData,
   promoterId,
+  userId,
 }: PromoterHistoryChartProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
@@ -58,7 +61,19 @@ export function PromoterHistoryChart({
 
   const [data, setData] = useState(historyData);
 
-  const stateHistory = usePromoterStore((state) => state.history[promoterId]);
+  const stateHistory = usePromoterStore(
+    (state) => state.chartHistory[promoterId]
+  );
+
+  const { setInitialChartHistory } = usePromoterStore();
+
+  useEffect(() => {
+    if (historyData) {
+      setInitialChartHistory(promoterId, historyData);
+    }
+  }, [historyData, promoterId, setInitialChartHistory]);
+
+  useSSE(promoterId, userId, "chart");
 
   useEffect(() => {
     if (stateHistory) {

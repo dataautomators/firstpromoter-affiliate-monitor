@@ -4,9 +4,17 @@ import type { HistoryEntry } from "@/components/promoter-history-table";
 import { usePromoterStore } from "@/store/promoter-store";
 import { useEffect } from "react";
 
-export function useSSE(promoterId: string, userId: string) {
-  const addHistoryEntry = usePromoterStore((state) => state.addHistoryEntry);
-  const setData = usePromoterStore((state) => state.setData);
+export function useSSE(
+  promoterId: string,
+  userId: string,
+  type: "table" | "chart"
+) {
+  const addTableHistoryEntry = usePromoterStore(
+    (state) => state.addTableHistoryEntry
+  );
+  const addChartHistoryEntry = usePromoterStore(
+    (state) => state.addChartHistoryEntry
+  );
 
   useEffect(() => {
     const eventSource = new EventSource(
@@ -15,8 +23,11 @@ export function useSSE(promoterId: string, userId: string) {
 
     eventSource.addEventListener("p-update", (event) => {
       const newData = JSON.parse(event.data) as HistoryEntry;
-      addHistoryEntry(promoterId, newData);
-      setData(event.data);
+      if (type === "table") {
+        addTableHistoryEntry(promoterId, newData);
+      } else {
+        addChartHistoryEntry(promoterId, newData);
+      }
     });
 
     eventSource.onerror = (error) => {
@@ -27,5 +38,5 @@ export function useSSE(promoterId: string, userId: string) {
     return () => {
       eventSource.close();
     };
-  }, [setData, promoterId, userId, addHistoryEntry]);
+  }, [type, promoterId, userId, addTableHistoryEntry, addChartHistoryEntry]);
 }

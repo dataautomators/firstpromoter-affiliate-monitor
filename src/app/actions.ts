@@ -1,40 +1,129 @@
 "use server";
 
-import type { Promoter } from "@/components/promoter-table";
+import prisma from "@/lib/prisma";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
+import { Promoter as PrismaPromoter } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export const fetchPromoters = async () => {
+export const fetchPromoters = async (
+  page: number = 1,
+  sort: string = "",
+  desc: string = "false",
+  pageSize: number = 10
+) => {
   const { userId } = await auth();
-  const res = await fetch(`${API_URL}/promoters`, {
-    cache: "no-store",
-    headers: {
-      Authorization: `Bearer ${userId}`,
+
+  if (!userId) return { error: "Unauthorized" };
+
+  const pageNumber = page || 1;
+
+  const orderBy = sort ? { [sort]: desc === "true" ? "desc" : "asc" } : {};
+
+  const [promoters, totalCount] = await Promise.all([
+    prisma.promoter.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        data: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+      orderBy,
+    }),
+    prisma.promoter.count({
+      where: {
+        userId,
+      },
+    }),
+  ]);
+
+  return {
+    promoters,
+    meta: {
+      totalCount,
+      page: pageNumber,
+      pageSize,
+      totalPages: Math.ceil(totalCount / pageSize),
     },
-  });
-  if (!res.ok) throw new Error("Failed to fetch promoters");
-  return res.json();
+  };
 };
 
 export const fetchPromoter = async (
   id: string
-): Promise<Promoter | { error: string }> => {
+): Promise<PrismaPromoter | { error: string }> => {
   const { userId } = await auth();
-  const res = await fetch(`${API_URL}/promoters/${id}`, {
-    cache: "no-store",
-    headers: {
-      Authorization: `Bearer ${userId}`,
+  if (!userId) return { error: "Unauthorized" };
+
+  const promoter = await prisma.promoter.findFirst({
+    where: {
+      id,
+      userId,
     },
   });
-  if (!res.ok) {
-    const message = await res.json();
-    return { error: message.message || "Failed to fetch promoter" };
-  }
-  return res.json();
+
+  if (!promoter) return { error: "Promoter not found" };
+
+  return promoter;
+};
+
+export const fetchPromoterData = async (id: string) => {
+  const promoterData = await prisma.promoterData.findMany({
+    where: {
+      promoterId: id,
+    },
+  });
+
+  return JSON.parse(JSON.stringify(promoterData));
+};
+
+export const fetchFilteredPromoterData = async (
+  id: string,
+  page: number = 1,
+  sort: string = "",
+  desc: string = "false",
+  pageSize: number = 10
+) => {
+  const pageNumber = page || 1;
+
+  const orderBy = sort ? { [sort]: desc === "true" ? "desc" : "asc" } : {};
+
+  const [promoterData, totalCount] = await Promise.all([
+    prisma.promoterData.findMany({
+      where: {
+        promoterId: id,
+      },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+      orderBy,
+    }),
+    prisma.promoterData.count({
+      where: {
+        promoterId: id,
+      },
+    }),
+  ]);
+
+  const data = JSON.parse(JSON.stringify(promoterData));
+
+  return {
+    promoterData: data,
+    meta: {
+      totalCount,
+      page: pageNumber,
+      pageSize,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
 };
 
 export const addPromoter = async (values: PromoterSchema) => {

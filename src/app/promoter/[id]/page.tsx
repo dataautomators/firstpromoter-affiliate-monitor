@@ -1,4 +1,9 @@
-import { fetchPromoter, manualRun } from "@/app/actions";
+import {
+  fetchFilteredPromoterData,
+  fetchPromoter,
+  fetchPromoterData,
+  manualRun,
+} from "@/app/actions";
 import { PromoterHistoryChart } from "@/components/promoter-history-chart";
 import PromoterHistoryTable from "@/components/promoter-history-table";
 import { Button } from "@/components/ui/button";
@@ -10,10 +15,13 @@ import { notFound } from "next/navigation";
 
 export default async function PromoterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page: string; sort: string; desc: string }>;
 }) {
   const { id } = await params;
+  const { page, sort, desc } = await searchParams;
   const { userId } = await auth();
 
   const promoter = await fetchPromoter(id);
@@ -26,6 +34,11 @@ export default async function PromoterPage({
   if (!promoter || "error" in promoter) {
     notFound();
   }
+
+  const promoterData = await fetchPromoterData(id);
+
+  const { meta, promoterData: filteredPromoterData } =
+    await fetchFilteredPromoterData(id, Number(page), sort, desc);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -65,7 +78,11 @@ export default async function PromoterPage({
         </CardContent>
       </Card>
 
-      <PromoterHistoryChart historyData={promoter.data} promoterId={id} />
+      <PromoterHistoryChart
+        userId={userId as string}
+        historyData={promoterData}
+        promoterId={id}
+      />
 
       <Card>
         <CardHeader>
@@ -73,9 +90,10 @@ export default async function PromoterPage({
         </CardHeader>
         <CardContent>
           <PromoterHistoryTable
-            history={promoter.data}
+            history={filteredPromoterData}
             promoterId={id}
             userId={userId as string}
+            meta={meta}
           />
         </CardContent>
       </Card>
