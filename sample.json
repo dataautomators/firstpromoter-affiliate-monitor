@@ -1,0 +1,202 @@
+{
+    "id": 611064,
+    "is_promoter": true,
+    "role": "promoter",
+    "encrypted_email": "3gLC14enwUYPXnx7mnTVMhSX8UKFfox61M+TAb4P--ENZ2zr+8QFQxFRDN--qMsSZ/FfZvR/oeYroFKh1w==",
+    "company": {
+        "id": 597,
+        "name": "Scraper API",
+        "domain": "scraperapi.com",
+        "subdomain": "scraperapi",
+        "currency": "usd",
+        "invoices_enabled": false,
+        "subscription": {
+            "status": "active",
+            "restrictions": {}
+        },
+        "portal_settings": {
+            "wforms": true,
+            "require_payout_method": false,
+            "mask_referrals_emails": true
+        },
+        "reply_to_email": "paulina@scraperapi.com"
+    },
+    "user": {
+        "id": 614193,
+        "email": "entrptaher@gmail.com",
+        "unconfirmed_email": null,
+        "timezone": null,
+        "auth_provider": "local",
+        "profile": {
+            "first_name": "Abu",
+            "last_name": "Taher",
+            "avatar": "https://www.gravatar.com/avatar/8d4cc9f4b0d916aec6e10fa7ee2c18e1?d=https%3A%2F%2Fcdn.firstpromoter.com%2Fassets%2Fimages%2Favatar.png"
+        }
+    },
+    "portal_settings": {
+        "hidden_sections": {
+            "logo_hidden": false,
+            "reports_page_hidden": false,
+            "referrals_page_hidden": false,
+            "user_menu_hidden": false,
+            "rewards_page_hidden": false,
+            "payouts_page_hidden": false,
+            "assets_page_hidden": false,
+            "subpromoters_page_hidden": false
+        }
+    },
+    "promoter": {
+        "id": 607805,
+        "email": "entrptaher@gmail.com",
+        "name": "Abu Taher",
+        "stats": {
+            "clicks_count": 1466,
+            "referrals_count": 344,
+            "sales_count": 169,
+            "customers_count": 20,
+            "revenue_amount": 6003404,
+            "active_customers_count": 13
+        },
+        "balances": {
+            "paid_balance": {
+                "cash": 1719870
+            },
+            "current_balance": {
+                "cash": 49455
+            },
+            "pending_balance": {
+                "cash": 27055
+            },
+            "earnings_balance": {
+                "cash": 1769325
+            },
+            "remaining_balance": {
+                "cash": 22400
+            },
+            "camp_1774_paid_balance": {
+                "cash": 1719870
+            },
+            "camp_1774_current_balance": {
+                "cash": 49455
+            },
+            "camp_1774_pending_balance": {
+                "cash": 27055
+            },
+            "camp_1774_earnings_balance": {
+                "cash": 1769325
+            },
+            "camp_1774_remaining_balance": {
+                "cash": 22400
+            }
+        },
+        "custom_fields": null,
+        "first_event_at": "2020-05-26T01:37:19.510Z",
+        "invoice_details_status": "not_set",
+        "joined_at": "2020-05-26T01:37:19Z",
+        "selected_payout_method": {
+            "id": 72968,
+            "method": "paypal",
+            "date_added": "2020-12-15T19:27:10Z",
+            "is_disabled": false
+        },
+        "pending_contract_documents": [],
+        "profile": {
+            "id": 614246,
+            "first_name": "Abu",
+            "last_name": "Taher",
+            "website": "",
+            "company_name": "",
+            "company_number": "",
+            "phone_number": "+8801953638451",
+            "w8_form_url": "https://d2gdx5nv84sdx2.cloudfront.net/uploads/wforms/64a2e8a9c23bc6c5a2c81fe13689d01b3122a002/w8_form/fw8ben-signed__1_.pdf",
+            "w9_form_url": null,
+            "address": "37/Cha/1, 12/B\r\nBaitul Aman Housing Society\r\nAdabor, Dhaka 1207",
+            "vat_id": "",
+            "country": "BD",
+            "paypal_email": "safaiaous@gmail.com",
+            "avatar": "https://www.gravatar.com/avatar/8d4cc9f4b0d916aec6e10fa7ee2c18e1?d=https%3A%2F%2Fcdn.firstpromoter.com%2Fassets%2Fimages%2Favatar.png",
+            "description": null,
+            "pending_vat_validation": null,
+            "invoice_details_validation_errors": {},
+            "instagram_url": "",
+            "youtube_url": "",
+            "linkedin_url": "",
+            "facebook_url": "",
+            "twitter_url": "",
+            "twitch_url": null,
+            "tiktok_url": null
+        },
+        "promoter_campaigns": [
+            {
+                "id": 635476,
+                "campaign_id": 1774,
+                "created_at": "2020-05-26T01:37:19Z",
+                "campaign": {
+                    "id": 1774,
+                    "name": "ScraperAPI Affiliates",
+                    "color": "#42a5f5"
+                },
+                "state": "accepted",
+                "promoter_id": 607805,
+                "stats": {
+                    "clicks_count": 1466,
+                    "referrals_count": 344,
+                    "sales_count": 169,
+                    "customers_count": 20,
+                    "revenue_amount": 6003404
+                },
+                "coupon": "TAHER10",
+                "display_coupon": "",
+                "ref_token": "taher",
+                "ref_link": "https://www.scraperapi.com/?fp_ref=taher",
+                "has_monetary_rewards": true,
+                "rewards_for_promoters": [
+                    {
+                        "apply_on": "all",
+                        "product_ids": [],
+                        "reward_id": 109344,
+                        "reward": {
+                            "name": "50% recurring commission",
+                            "promoter_reward_type": "sale",
+                            "hide_reward": null,
+                            "tier_level": 1,
+                            "coupon": ""
+                        },
+                        "products": null
+                    },
+                    {
+                        "apply_on": "all",
+                        "product_ids": [],
+                        "reward_id": 134502,
+                        "reward": {
+                            "name": "5% second tier commission",
+                            "promoter_reward_type": "tier",
+                            "hide_reward": null,
+                            "tier_level": 2,
+                            "coupon": null
+                        },
+                        "products": null
+                    }
+                ],
+                "rewards_for_referrals": [
+                    {
+                        "apply_on": "all",
+                        "product_ids": [],
+                        "reward_id": 10084,
+                        "reward": {
+                            "name": "10% discount coupon",
+                            "promoter_reward_type": null,
+                            "hide_reward": null,
+                            "tier_level": 1,
+                            "coupon": null
+                        },
+                        "products": null
+                    }
+                ],
+                "promo_codes": [],
+                "recruitment_link_url": "https://affiliates.scraperapi.com?sref=ix0i1qo"
+            }
+        ],
+        "is_confirmed": true
+    }
+}
