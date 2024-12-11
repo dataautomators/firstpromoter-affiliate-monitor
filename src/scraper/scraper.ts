@@ -59,12 +59,15 @@ export const getData = async (token: string, companyHost: string) => {
 
   const data = await response.json();
 
-  const { stats } = data.promoter;
+  const { stats, balances } = data.promoter;
   const newData = {
     clicks: stats.clicks_count,
-    referral: stats.referral_count,
-    unpaid: stats.revenue_amount,
+    referral: stats.referrals_count,
+    unpaid: balances.current_balance.cash,
     customers: stats.customers_count,
   };
+
+  console.log({newData});
+
   return newData;
 };
