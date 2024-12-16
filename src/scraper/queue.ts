@@ -77,7 +77,7 @@ const worker = new Worker(
           ).toFixed(2);
           await sendReferralBalanceEmail({
             to: email,
-            userName: promoter.user.name,
+            userName: promoter.user.firstName,
             host: companyHost,
             newBalance: formattedUnpaid,
             previousBalance: formattedPreviousUnpaid,
