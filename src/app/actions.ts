@@ -4,7 +4,7 @@ import { parseUser } from "@/lib/parseUser";
 import prisma from "@/lib/prisma";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Promoter as PrismaPromoter } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -151,15 +151,16 @@ export const addPromoter = async (values: PromoterSchema) => {
     return { error: "Invalid input" };
   }
 
-  const userData = await createOrUpdateUser();
+  await createOrUpdateUser();
 
-  if (!userData) return { error: "Unauthorized" };
+  const { getToken } = await auth();
+  const token = await getToken();
 
   const res = await fetch(`${API_URL}/promoters`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userData.clerkId}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(validatedFields.data),
   });
@@ -202,13 +203,14 @@ export const updatePromoter = async (
 
   const userData = await createOrUpdateUser();
 
-  if (!userData) return { error: "Unauthorized" };
+  const { getToken } = await auth();
+  const token = await getToken();
 
   const response = await fetch(`${API_URL}/promoters/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userData.clerkId}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(changedData),
   });
@@ -226,12 +228,13 @@ export const updatePromoter = async (
 export const deletePromoter = async (id: string) => {
   const userData = await createOrUpdateUser();
 
-  if (!userData) throw new Error("Unauthorized");
+  const { getToken } = await auth();
+  const token = await getToken();
 
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${userData.clerkId}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -243,11 +246,12 @@ export const deletePromoter = async (id: string) => {
 export const manualRun = async (id: string) => {
   const userData = await createOrUpdateUser();
 
-  if (!userData) return { error: "Unauthorized" };
+  const { getToken } = await auth();
+  const token = await getToken();
 
   const res = await fetch(`${API_URL}/manual-run/${id}`, {
     headers: {
-      Authorization: `Bearer ${userData.clerkId}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   if (!res.ok) {

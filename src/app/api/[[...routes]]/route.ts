@@ -6,6 +6,7 @@ import {
   addScheduledJob,
   removeScheduledJob,
 } from "@/scraper/queue";
+import { auth } from "@clerk/nextjs/server";
 import { PromoterData } from "@prisma/client";
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -21,13 +22,12 @@ type Variables = {
 const app = new Hono<{ Variables: Variables }>().basePath("/api");
 
 const checkAuthMiddleware = createMiddleware(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
+  const { userId } = await auth();
 
-  if (!authHeader) {
+  if (!userId) {
     return c.json({ message: "Unauthorized" }, 401);
   }
 
-  const userId = authHeader.split(" ")[1];
   c.set("userId", userId);
   await next();
 });
