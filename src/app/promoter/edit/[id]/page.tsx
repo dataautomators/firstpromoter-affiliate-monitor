@@ -13,10 +13,15 @@ export default async function EditPromoterPage({
     notFound();
   }
 
+  const newPromoter = {
+    ...promoter,
+    schedule: promoter.schedule as string | undefined,
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="max-w-2xl mx-auto">
-        <EditPromoterForm promoter={promoter} />
+        <EditPromoterForm promoter={newPromoter} />
       </div>
     </div>
   );

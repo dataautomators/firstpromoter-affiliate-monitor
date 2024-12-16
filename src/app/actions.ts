@@ -226,7 +226,7 @@ export const updatePromoter = async (
 export const deletePromoter = async (id: string) => {
   const userData = await createOrUpdateUser();
 
-  if (!userData) return { error: "Unauthorized" };
+  if (!userData) throw new Error("Unauthorized");
 
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     method: "DELETE",
