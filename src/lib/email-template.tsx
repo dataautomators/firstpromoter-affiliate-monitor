@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import {
   Body,
   Container,
@@ -13,7 +11,7 @@ import {
 
 type EmailTemplateProps = {
   host: string;
-  userName: string;
+  userName: string | null;
   newBalance: string;
   previousBalance: string;
   increaseAmount: string;
@@ -34,7 +32,9 @@ export function ReferralBalanceEmail({
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-auto p-5">
             <Section className="py-4">
-              <Text className="text-xl font-bold">Hi {userName},</Text>
+              <Text className="text-xl font-bold">
+                Hi{userName && ` ${userName}`},
+              </Text>
 
               <Text className="mt-4">
                 Great news! Your referral balance has just increased. 🎉

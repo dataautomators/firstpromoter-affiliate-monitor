@@ -7,7 +7,7 @@ const from = `${process.env.SENDER_NAME} <${process.env.SENDER_EMAIL}>`;
 
 type SendReferralBalanceEmailProps = {
   to: string;
-  userName: string;
+  userName: string | null;
   host: string;
   newBalance: string;
   previousBalance: string;
