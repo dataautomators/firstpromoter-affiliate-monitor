@@ -1,13 +1,26 @@
 "use server";
 
+import { parseUser } from "@/lib/parseUser";
 import prisma from "@/lib/prisma";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Promoter as PrismaPromoter } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+const createOrUpdateUser = async () => {
+  const user = await currentUser();
+  if (!user) return null;
+  const { clerkId, email, firstName, lastName } = parseUser(user);
+  const userData = await prisma.user.upsert({
+    where: { clerkId },
+    update: { email, firstName, lastName },
+    create: { clerkId, email, firstName, lastName },
+  });
+  return userData;
+};
 
 export const fetchPromoters = async (
   page: number = 1,
@@ -15,9 +28,9 @@ export const fetchPromoters = async (
   desc: string = "false",
   pageSize: number = 10
 ) => {
-  const { userId } = await auth();
+  const userData = await createOrUpdateUser();
 
-  if (!userId) return { error: "Unauthorized" };
+  if (!userData) return { error: "Unauthorized" };
 
   const pageNumber = page || 1;
 
@@ -26,7 +39,7 @@ export const fetchPromoters = async (
   const [promoters, totalCount] = await Promise.all([
     prisma.promoter.findMany({
       where: {
-        userId,
+        userId: userData.clerkId,
       },
       include: {
         data: {
@@ -42,7 +55,7 @@ export const fetchPromoters = async (
     }),
     prisma.promoter.count({
       where: {
-        userId,
+        userId: userData.clerkId,
       },
     }),
   ]);
@@ -61,13 +74,14 @@ export const fetchPromoters = async (
 export const fetchPromoter = async (
   id: string
 ): Promise<PrismaPromoter | { error: string }> => {
-  const { userId } = await auth();
-  if (!userId) return { error: "Unauthorized" };
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
 
   const promoter = await prisma.promoter.findFirst({
     where: {
       id,
-      userId,
+      userId: userData.clerkId,
     },
   });
 
@@ -93,6 +107,10 @@ export const fetchFilteredPromoterData = async (
   desc: string = "false",
   pageSize: number = 10
 ) => {
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
+
   const pageNumber = page || 1;
 
   const orderBy = sort ? { [sort]: desc === "true" ? "desc" : "asc" } : {};
@@ -133,13 +151,15 @@ export const addPromoter = async (values: PromoterSchema) => {
     return { error: "Invalid input" };
   }
 
-  const { userId } = await auth();
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
 
   const res = await fetch(`${API_URL}/promoters`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
+      Authorization: `Bearer ${userData.clerkId}`,
     },
     body: JSON.stringify(validatedFields.data),
   });
@@ -180,13 +200,15 @@ export const updatePromoter = async (
     return acc;
   }, {} as Record<string, unknown>);
 
-  const { userId } = await auth();
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
 
   const response = await fetch(`${API_URL}/promoters/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
+      Authorization: `Bearer ${userData.clerkId}`,
     },
     body: JSON.stringify(changedData),
   });

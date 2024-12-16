@@ -30,18 +30,20 @@ See `.env.example` for the environment variables.
 
 - Login to clerk dashboard
 - Create an project and save the credentials to `env`
-- Go to `Configure` -> `Email, phone, username` and turn on the `Personal information`
-- Again go to `Configure` -> `Email, phone, username` -> `Personal information` and turn on the `Required fields`
-  ![Clerk Personal Information](./.github/images/clerk%201.png)
+
+## Optional: Clerk Webhook
+
+Clert webhook is used to get the user created, updated and deleted events. This is useful to create a promoter when a user is created and delete the promoter when a user is deleted.
+
 - Go to `Configure` -> `Webhook` -> `Add Endpoint` and add the ngrok tunnel or cloudflare tunnel url. Note: you need to point the tunnel to the running server. The webhook will running in `/api/webhook` so your url should be like `https://<ngrok-url>/api/webhook`.
 - Select these events:
   - User created
   - User updated
   - User deleted
-- ![Clerk Webhook](./.github/images/clerk%202.png)
+  - ![Clerk Webhook](./.github/images/clerk%202.png)
 - Click to `Create`
 - Save the `Signing Secret` to `env`
-  ![Clerk Signing Secret](./.github/images/clerk%203.png)
+  - ![Clerk Signing Secret](./.github/images/clerk%203.png)
 
 ## Endpoints
 

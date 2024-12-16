@@ -93,7 +93,7 @@ export default async function PromoterPage({
             history={filteredPromoterData}
             promoterId={id}
             userId={userId as string}
-            meta={meta}
+            meta={meta!}
           />
         </CardContent>
       </Card>

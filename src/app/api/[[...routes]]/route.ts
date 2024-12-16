@@ -22,6 +22,7 @@ const app = new Hono<{ Variables: Variables }>().basePath("/api");
 
 const checkAuthMiddleware = createMiddleware(async (c, next) => {
   const authHeader = c.req.header("Authorization");
+
   if (!authHeader) {
     return c.json({ message: "Unauthorized" }, 401);
   }
@@ -324,10 +325,10 @@ app.post("/webhook", async (c) => {
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
   const createData = async () => {
     const { first_name, last_name, email_addresses } = evt.data;
-    const fullName = `${first_name}${last_name ? ` ${last_name}` : ""}`;
     return {
       clerkId: id,
-      name: fullName,
+      firstName: first_name,
+      lastName: last_name,
       email: email_addresses[0].email_address,
     };
   };
