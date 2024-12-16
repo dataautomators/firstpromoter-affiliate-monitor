@@ -4,7 +4,7 @@ import { parseUser } from "@/lib/parseUser";
 import prisma from "@/lib/prisma";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { getChangedKeys } from "@/lib/utils";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { Promoter as PrismaPromoter } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -224,11 +224,14 @@ export const updatePromoter = async (
 };
 
 export const deletePromoter = async (id: string) => {
-  const { userId } = await auth();
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
+
   const res = await fetch(`${API_URL}/promoters/${id}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${userId}`,
+      Authorization: `Bearer ${userData.clerkId}`,
     },
   });
 
@@ -238,10 +241,13 @@ export const deletePromoter = async (id: string) => {
 };
 
 export const manualRun = async (id: string) => {
-  const { userId } = await auth();
+  const userData = await createOrUpdateUser();
+
+  if (!userData) return { error: "Unauthorized" };
+
   const res = await fetch(`${API_URL}/manual-run/${id}`, {
     headers: {
-      Authorization: `Bearer ${userId}`,
+      Authorization: `Bearer ${userData.clerkId}`,
     },
   });
   if (!res.ok) {
