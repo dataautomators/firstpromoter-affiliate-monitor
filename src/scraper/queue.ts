@@ -5,6 +5,29 @@ import { sendReferralBalanceEmail } from "@/lib/resend";
 import { getData, login, ScraperError } from "@/scraper/scraper";
 import { Job, Queue, Worker } from "bullmq";
 
+export const updateAccessToken = async (id: string) => {
+  const promoter = await prisma.promoter.findUnique({
+    where: { id },
+  });
+
+  if (!promoter) {
+    throw new Error("Promoter not found");
+  }
+
+  const { email, password, companyHost } = promoter;
+  const { accessToken, refreshToken } = await login(
+    email,
+    password,
+    companyHost
+  );
+  await prisma.promoter.update({
+    where: { id },
+    data: { accessToken, refreshToken },
+  });
+
+  return { accessToken, refreshToken };
+};
+
 export const jobQueue = new Queue<{ id: string }>("promoter", {
   connection,
   defaultJobOptions: {
@@ -47,26 +70,28 @@ const worker = new Worker(
 
       // Login to get access token and refresh token
       if (!accessToken) {
-        const { accessToken: newAccessToken, refreshToken } = await login(
-          email,
-          password,
-          companyHost
-        );
-        await prisma.promoter.update({
-          where: { id },
-          data: {
-            accessToken: newAccessToken,
-            refreshToken,
-          },
-        });
+        const { accessToken: newAccessToken } = await updateAccessToken(id);
         accessToken = newAccessToken;
       }
 
       // Get data
-      const promoterData = await getData(accessToken!, companyHost);
+      let promoterData;
+      try {
+        promoterData = await getData(accessToken!, companyHost);
+      } catch (error) {
+        if (error instanceof ScraperError && error.message === "Unauthorized") {
+          const { accessToken: newAccessToken } = await updateAccessToken(id);
+          accessToken = newAccessToken;
+          promoterData = await getData(accessToken!, companyHost);
+        }
+      }
 
       // Send email if balance increased
-      if (promoter.data.length > 0 && promoter.data[0].status === "SUCCESS") {
+      if (
+        promoter.data.length > 0 &&
+        promoter.data[0].status === "SUCCESS" &&
+        promoterData
+      ) {
         if (promoterData.unpaid > promoter.data[0].unpaid) {
           const formattedUnpaid = (promoterData.unpaid / 100).toFixed(2);
           const formattedPreviousUnpaid = (
