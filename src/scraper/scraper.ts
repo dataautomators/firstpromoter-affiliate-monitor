@@ -61,13 +61,13 @@ export const getData = async (token: string, companyHost: string) => {
 
   const { stats, balances } = data.promoter;
   const newData = {
-    clicks: stats.clicks_count,
-    referral: stats.referrals_count,
-    unpaid: balances.current_balance.cash,
-    customers: stats.customers_count,
+    clicks: stats?.clicks_count || 0,
+    referral: stats?.referrals_count || 0,
+    unpaid: balances?.current_balance?.cash || 0,
+    customers: stats?.customers_count || 0,
   };
 
-  console.log({newData});
+  console.log({ newData });
 
   return newData;
 };
