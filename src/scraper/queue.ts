@@ -1,9 +1,9 @@
 import { messageEmitter } from "@/lib/messageEmitter";
 import { prisma } from "@/lib/prisma";
 import { connection } from "@/lib/redis";
-import { sendReferralBalanceEmail } from "@/lib/resend";
 import { getData, login, ScraperError } from "@/scraper/scraper";
 import { Job, Queue, Worker } from "bullmq";
+import chalk from "chalk";
 
 export const updateAccessToken = async (id: string) => {
   const promoter = await prisma.promoter.findUnique({
@@ -63,7 +63,7 @@ const worker = new Worker(
         throw new Error("Promoter not found");
       }
 
-      const { email, password, companyHost, source, userId } = promoter;
+      const { companyHost, source, userId } = promoter;
       let { accessToken } = promoter;
 
       console.log("Processing promoter", source);
@@ -100,14 +100,20 @@ const worker = new Worker(
           const increaseAmount = (
             parseFloat(formattedUnpaid) - parseFloat(formattedPreviousUnpaid)
           ).toFixed(2);
-          await sendReferralBalanceEmail({
-            to: email,
-            userName: promoter.user.firstName,
-            host: companyHost,
-            newBalance: formattedUnpaid,
-            previousBalance: formattedPreviousUnpaid,
-            increaseAmount,
-          });
+
+          // Send email if resend is configured
+          if (process.env.RESEND_API_KEY) {
+            const { sendReferralBalanceEmail } = await import("@/lib/resend"); // Lazy load resend
+
+            await sendReferralBalanceEmail({
+              to: promoter.user.email,
+              userName: promoter.user.firstName,
+              host: companyHost,
+              newBalance: formattedUnpaid,
+              previousBalance: formattedPreviousUnpaid,
+              increaseAmount,
+            });
+          }
         }
       }
 
@@ -117,6 +123,7 @@ const worker = new Worker(
       });
 
       messageEmitter.emit(`${id}-${userId}`, savedPromoterData);
+      console.log(chalk.green("Debug: Emitted message:", `${id}-${userId}`));
     } catch (error) {
       console.error(error);
       const failedMessage =
@@ -139,6 +146,7 @@ const worker = new Worker(
       const { userId } = promoterData.promoter;
 
       messageEmitter.emit(`${id}-${userId}`, promoterData);
+      console.log(chalk.red("Debug: Emitted message:", `${id}-${userId}`));
     }
   },
   { connection }

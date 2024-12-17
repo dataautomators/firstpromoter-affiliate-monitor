@@ -3,21 +3,13 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  CheckCircle2,
-  ChevronDown,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -66,16 +58,16 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Unpaid
-          {column.getIsSorted() === "asc" ? (
+          {/* {column.getIsSorted() === "asc" ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          )}
+          )} */}
         </Button>
       );
     },
@@ -94,16 +86,16 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Referral
-          {column.getIsSorted() === "asc" ? (
+          {/* {column.getIsSorted() === "asc" ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          )}
+          )} */}
         </Button>
       );
     },
@@ -117,16 +109,16 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Clicks
-          {column.getIsSorted() === "asc" ? (
+          {/* {column.getIsSorted() === "asc" ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          )}
+          )} */}
         </Button>
       );
     },
@@ -140,16 +132,16 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Customers
-          {column.getIsSorted() === "asc" ? (
+          {/* {column.getIsSorted() === "asc" ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          )}
+          )} */}
         </Button>
       );
     },
@@ -163,16 +155,16 @@ export const columns: ColumnDef<HistoryEntry>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created At
-          {column.getIsSorted() === "asc" ? (
+          {/* {column.getIsSorted() === "asc" ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          )}
+          )} */}
         </Button>
       );
     },
@@ -253,7 +245,7 @@ export default function PromoterHistoryTable({
   useSSE(promoterId, userId, "table");
 
   const [data, setData] = useState(history);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
@@ -267,21 +259,21 @@ export default function PromoterHistoryTable({
     }
   }, [promoterId, stateHistory]);
 
-  useEffect(() => {
-    const sortingId = sorting[0]?.id;
-    if (sortingId) {
-      const params = new URLSearchParams(searchParams);
-      params.set("sort", sortingId);
-      params.set("desc", sorting[0]?.desc ? "true" : "false");
+  // useEffect(() => {
+  //   const sortingId = sorting[0]?.id;
+  //   if (sortingId) {
+  //     const params = new URLSearchParams(searchParams);
+  //     params.set("sort", sortingId);
+  //     params.set("desc", sorting[0]?.desc ? "true" : "false");
 
-      router.push(`${pathName}?${params.toString()}`);
-    }
-  }, [sorting]);
+  //     router.push(`${pathName}?${params.toString()}`);
+  //   }
+  // }, [sorting]);
 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
+    // onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
@@ -289,7 +281,7 @@ export default function PromoterHistoryTable({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
-      sorting,
+      // sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
