@@ -103,8 +103,8 @@ export const fetchPromoterData = async (id: string) => {
 export const fetchFilteredPromoterData = async (
   id: string,
   page: number = 1,
-  sort: string = "",
-  desc: string = "false",
+  sort: string = "createdAt",
+  desc: string = "true",
   pageSize: number = 10
 ) => {
   const userData = await createOrUpdateUser();

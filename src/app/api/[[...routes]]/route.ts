@@ -8,6 +8,7 @@ import {
 } from "@/scraper/queue";
 import { auth } from "@clerk/nextjs/server";
 import { PromoterData } from "@prisma/client";
+import chalk from "chalk";
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { validator } from "hono/validator";
@@ -221,7 +222,10 @@ app.get("/sse/:id", async (c) => {
       sseClients.set(clientId, sendSSE);
       console.log("Debug: Current client count:", sseClients.size);
 
-      messageEmitter.on(`${id}-${userId}`, sendSSE);
+      messageEmitter.on(`${id}-${userId}`, (promoterData) => {
+        console.log(chalk.green("Debug: Received message:", promoterData.id));
+        sendSSE(promoterData);
+      });
 
       c.req.raw.signal.addEventListener("abort", () => {
         console.log("Debug: Cleaning up client:", clientId);
@@ -243,7 +247,7 @@ app.get("/sse/:id", async (c) => {
 });
 
 app.post("/webhook", async (c) => {
-  const SIGNING_SECRET = process.env.SIGNING_SECRET;
+  const SIGNING_SECRET = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
   if (!SIGNING_SECRET) {
     return c.json(
       {
