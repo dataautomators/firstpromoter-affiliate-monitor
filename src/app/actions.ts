@@ -8,7 +8,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { Promoter as PrismaPromoter } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const createOrUpdateUser = async () => {
   const user = await currentUser();
