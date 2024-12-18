@@ -1,3 +1,5 @@
+import { getDecryptedCredentials } from "@/lib/cryptoHelpers";
+
 export class ScraperError extends Error {}
 
 const baseUrl =
@@ -8,9 +10,10 @@ export const login = async (
   password: string,
   companyHost: string
 ) => {
+  const decryptedPassword = getDecryptedCredentials(password);
   const response = await fetch(`${baseUrl}/authorization/login`, {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password: decryptedPassword }),
     headers: {
       "Content-Type": "application/json",
       company_host: companyHost,
