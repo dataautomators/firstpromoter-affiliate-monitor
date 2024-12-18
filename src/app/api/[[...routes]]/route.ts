@@ -193,7 +193,6 @@ app.get("/promoters/:id", async (c) => {
 
 app.get("/manual-run/:id", checkAuthMiddleware, async (c) => {
   const { id } = c.req.param();
-  const userId = c.get("userId");
   await addManualJob(id);
   return c.json({ message: "Manual run added" });
 });

@@ -201,7 +201,7 @@ export const updatePromoter = async (
     return acc;
   }, {} as Record<string, unknown>);
 
-  const userData = await createOrUpdateUser();
+  await createOrUpdateUser();
 
   const { getToken } = await auth();
   const token = await getToken();
@@ -226,7 +226,7 @@ export const updatePromoter = async (
 };
 
 export const deletePromoter = async (id: string) => {
-  const userData = await createOrUpdateUser();
+  await createOrUpdateUser();
 
   const { getToken } = await auth();
   const token = await getToken();
@@ -244,7 +244,7 @@ export const deletePromoter = async (id: string) => {
 };
 
 export const manualRun = async (id: string) => {
-  const userData = await createOrUpdateUser();
+  await createOrUpdateUser();
 
   const { getToken } = await auth();
   const token = await getToken();

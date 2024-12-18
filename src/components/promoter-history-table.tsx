@@ -36,7 +36,7 @@ import {
 
 import { useSSE } from "@/hooks/useSSE";
 import { usePromoterStore } from "@/store/promoter-store";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import PromoterPagination from "./promoter-pagination";
 
 export interface HistoryEntry {
@@ -54,7 +54,7 @@ export interface HistoryEntry {
 export const columns: ColumnDef<HistoryEntry>[] = [
   {
     accessorKey: "unpaid",
-    header: ({ column }) => {
+    header: () => {
       return (
         <Button
           variant="ghost"
@@ -82,7 +82,7 @@ export const columns: ColumnDef<HistoryEntry>[] = [
   },
   {
     accessorKey: "referral",
-    header: ({ column }) => {
+    header: () => {
       return (
         <Button
           variant="ghost"
@@ -105,7 +105,7 @@ export const columns: ColumnDef<HistoryEntry>[] = [
   },
   {
     accessorKey: "clicks",
-    header: ({ column }) => {
+    header: () => {
       return (
         <Button
           variant="ghost"
@@ -128,7 +128,7 @@ export const columns: ColumnDef<HistoryEntry>[] = [
   },
   {
     accessorKey: "customers",
-    header: ({ column }) => {
+    header: () => {
       return (
         <Button
           variant="ghost"
@@ -151,7 +151,7 @@ export const columns: ColumnDef<HistoryEntry>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
+    header: () => {
       return (
         <Button
           variant="ghost"
@@ -250,8 +250,8 @@ export default function PromoterHistoryTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const pathName = usePathname();
-  const router = useRouter();
+  // const pathName = usePathname();
+  // const router = useRouter();
 
   useEffect(() => {
     if (stateHistory[promoterId]) {
