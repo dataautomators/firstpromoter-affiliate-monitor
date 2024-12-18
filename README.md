@@ -33,6 +33,12 @@ pnpm build
 pnpm start
 ```
 
+## Docker
+
+```
+docker compose up -d --build
+```
+
 ## Clerk Setup
 
 ### Initial Setup
