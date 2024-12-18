@@ -24,6 +24,15 @@ Open http://localhost:3000 in your browser.
 
 See `.env.example` for the environment variables.
 
+## Production
+
+```
+pnpm install
+pnpm db:deploy
+pnpm build
+pnpm start
+```
+
 ## Clerk Setup
 
 ### Initial Setup
