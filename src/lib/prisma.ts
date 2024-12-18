@@ -28,7 +28,6 @@ const myExtension = Prisma.defineExtension({
       },
       upsert: async ({ args, query }) => {
         if (args.create.password || args.update.password) {
-          const createOrUpdate = args.create.password;
           const encryptedPassword = encrypt(args.create.password as string);
           args.create.password = encryptedPassword;
         }

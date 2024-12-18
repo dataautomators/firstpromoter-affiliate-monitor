@@ -22,17 +22,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
-import {
-  convertCronFromUTC,
-  convertCronToUTC,
-  validateCronSchedule,
-} from "@/lib/validateCron";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { CronExpressionInput } from "./cron-expression-input";
+import ScheduleInput from "./schedule-input";
 
 type EditPromoterType = PromoterSchema & { id: string };
 
@@ -45,39 +40,18 @@ export default function EditPromoterForm({
   const [isManual, setIsManual] = useState(promoter.manualRun);
   const router = useRouter();
 
-  const getSchedule = () => {
-    if (promoter.schedule) {
-      const localCron = convertCronFromUTC(promoter.schedule);
-      console.log("localCron", localCron);
-      console.log("original", promoter.schedule);
-      if (validateCronSchedule(localCron)) {
-        console.log("valid");
-        return localCron;
-      }
-    }
-    return promoter.schedule;
-  };
-
   const form = useForm<PromoterSchema>({
     resolver: zodResolver(promoterSchema),
     defaultValues: {
       ...promoter,
-      schedule: getSchedule(),
     },
   });
 
   async function onSubmit(values: PromoterSchema) {
     if (values.manualRun) {
-      values.schedule = ""; // Disable schedule
+      delete values.schedule;
     }
 
-    // Convert cron to UTC
-    if (values.schedule) {
-      const utcCron = convertCronToUTC(values.schedule);
-      if (validateCronSchedule(utcCron)) {
-        values.schedule = utcCron;
-      }
-    }
     const result = await updatePromoter(promoter.id, values, promoter);
     if (result.success) {
       form.reset();
@@ -194,8 +168,8 @@ export default function EditPromoterForm({
                   <FormItem>
                     <FormLabel>Schedule</FormLabel>
                     <FormControl>
-                      <CronExpressionInput
-                        value={field.value ?? ""}
+                      <ScheduleInput
+                        value={field.value ?? 0}
                         onChange={field.onChange}
                       />
                     </FormControl>

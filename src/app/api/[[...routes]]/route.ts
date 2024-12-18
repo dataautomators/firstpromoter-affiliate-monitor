@@ -91,6 +91,7 @@ app.post(
       console.log(
         `Adding scheduled job for ${newPromoter.id} with schedule ${newPromoter.schedule}`
       );
+      await addManualJob(newPromoter.id);
       await addScheduledJob(newPromoter.id, newPromoter.schedule);
     } else if (newPromoter.isEnabled && newPromoter.manualRun) {
       console.log(`Adding manual job for ${newPromoter.id}`);

@@ -22,12 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
-import { convertCronToUTC, validateCronSchedule } from "@/lib/validateCron";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { CronExpressionInput } from "./cron-expression-input";
+import ScheduleInput from "./schedule-input";
 
 export default function AddPromoterForm() {
   const { toast } = useToast();
@@ -42,21 +41,13 @@ export default function AddPromoterForm() {
       password: "",
       isEnabled: true,
       manualRun: false,
-      schedule: "*/15 * * * *", // Default to every 15 minutes
+      schedule: 900, // Default to every 15 minutes
     },
   });
 
   async function onSubmit(values: PromoterSchema) {
     if (values.manualRun) {
-      values.schedule = ""; // Disable schedule
-    }
-
-    // Convert cron to UTC
-    if (values.schedule) {
-      const utcCron = convertCronToUTC(values.schedule);
-      if (validateCronSchedule(utcCron)) {
-        values.schedule = utcCron;
-      }
+      delete values.schedule; // Disable schedule
     }
 
     const result = await addPromoter(values);
@@ -178,8 +169,8 @@ export default function AddPromoterForm() {
                   <FormItem>
                     <FormLabel>Schedule</FormLabel>
                     <FormControl>
-                      <CronExpressionInput
-                        value={field.value ?? ""}
+                      <ScheduleInput
+                        value={field.value ?? 0}
                         onChange={field.onChange}
                       />
                     </FormControl>

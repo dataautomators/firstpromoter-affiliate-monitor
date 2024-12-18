@@ -15,7 +15,8 @@ export default async function EditPromoterPage({
 
   const newPromoter = {
     ...promoter,
-    schedule: promoter.schedule as string | undefined,
+    password: "",
+    schedule: promoter.schedule as number | undefined,
   };
 
   return (

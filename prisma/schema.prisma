@@ -29,7 +29,7 @@ model Promoter {
   password     String
   accessToken  String?
   refreshToken String?
-  schedule     String? // Cron schedule (e.g., "0 0 * * *" for nightly updates)
+  schedule     Int? // Seconds  
   isEnabled    Boolean  @default(true)
   manualRun    Boolean  @default(false)
   createdAt    DateTime @default(now())

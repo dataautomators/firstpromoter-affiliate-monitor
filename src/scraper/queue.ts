@@ -41,6 +41,7 @@ export const jobQueue = new Queue<{ id: string }>("promoter", {
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const worker = new Worker(
   "promoter",
   async (job: Job<{ id: string }>) => {
@@ -152,13 +153,12 @@ const worker = new Worker(
   { connection }
 );
 
-export const addScheduledJob = async (id: string, schedule: string) => {
+export const addScheduledJob = async (id: string, schedule: number) => {
   if (schedule) {
     await jobQueue.upsertJobScheduler(
       `scheduled-${id}`,
       {
-        pattern: schedule,
-        utc: true,
+        every: schedule * 1000,
       },
       {
         data: { id },

@@ -1,4 +1,3 @@
-import { validateCronSchedule } from "@/lib/validateCron";
 import { z } from "zod";
 
 export const promoterSchema = z
@@ -10,11 +9,10 @@ export const promoterSchema = z
       .min(8, { message: "Password must be at least 8 characters" }),
     isEnabled: z.boolean().optional().default(true),
     manualRun: z.boolean().optional().default(false),
-    schedule: z.string().optional(),
-  })
-  .refine((data) => !data.schedule || validateCronSchedule(data.schedule), {
-    message: "Invalid cron expression",
-    path: ["schedule"],
+    schedule: z
+      .number()
+      .gt(599, { message: "Schedule must be at least 10 minutes" })
+      .optional(),
   })
   .refine((data) => data.schedule || data.manualRun, {
     message: "Either schedule or manualRun must be provided",
@@ -31,11 +29,10 @@ export const updatePromoterSchema = z
       .optional(),
     isEnabled: z.boolean().optional().default(true),
     manualRun: z.boolean().optional().default(false),
-    schedule: z.string().optional(),
-  })
-  .refine((data) => !data.schedule || validateCronSchedule(data.schedule), {
-    message: "Invalid cron schedule",
-    path: ["schedule"],
+    schedule: z
+      .number()
+      .gt(599, { message: "Schedule must be at least 10 minutes" })
+      .optional(),
   })
   .refine((data) => !(data.schedule && data.manualRun), {
     message: "Both schedule and manualRun cannot be provided",
