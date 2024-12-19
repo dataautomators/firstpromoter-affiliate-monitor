@@ -15,24 +15,28 @@ const myExtension = Prisma.defineExtension({
   query: {
     promoter: {
       create: async ({ args, query }) => {
-        const encryptedPassword = encrypt(args.data.password);
+        const encryptedPassword = await encrypt(args.data.password);
         args.data.password = encryptedPassword;
         return query(args);
       },
       update: async ({ args, query }) => {
         if (args.data.password) {
-          const encryptedPassword = encrypt(args.data.password as string);
+          const encryptedPassword = await encrypt(args.data.password as string);
           args.data.password = encryptedPassword;
         }
         return query(args);
       },
       upsert: async ({ args, query }) => {
         if (args.create.password || args.update.password) {
-          const encryptedPassword = encrypt(args.create.password as string);
+          const encryptedPassword = await encrypt(
+            args.create.password as string
+          );
           args.create.password = encryptedPassword;
         }
         if (args.update.password) {
-          const encryptedPassword = encrypt(args.update.password as string);
+          const encryptedPassword = await encrypt(
+            args.update.password as string
+          );
           args.update.password = encryptedPassword;
         }
         return query(args);

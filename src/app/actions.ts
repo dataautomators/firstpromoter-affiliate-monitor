@@ -208,7 +208,7 @@ export const updatePromoter = async (
   const { getToken } = await auth();
   const token = await getToken();
 
-  const response = await fetch(`${API_URL}/promoters/${id}`, {
+  const res = await fetch(`${API_URL}/promoters/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -217,8 +217,10 @@ export const updatePromoter = async (
     body: JSON.stringify(changedData),
   });
 
-  if (!response.ok) {
-    const message = await response.json();
+  if (!res.ok) {
+    const message = await res.json().catch(() => ({
+      message: "Internal server error",
+    }));
     return { error: message.message || "Failed to update promoter" };
   }
 

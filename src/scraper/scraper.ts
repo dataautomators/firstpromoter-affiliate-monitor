@@ -1,4 +1,4 @@
-import { getDecryptedCredentials } from "@/lib/cryptoHelpers";
+import { decrypt } from "@/lib/cryptoHelpers";
 
 export class ScraperError extends Error {}
 
@@ -10,7 +10,12 @@ export const login = async (
   password: string,
   companyHost: string
 ) => {
-  const decryptedPassword = getDecryptedCredentials(password);
+  const decryptedPassword = await decrypt(password).catch(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_err) => {
+      throw new Error("Invalid credentials");
+    }
+  );
   const response = await fetch(`${baseUrl}/authorization/login`, {
     method: "POST",
     body: JSON.stringify({ email, password: decryptedPassword }),
