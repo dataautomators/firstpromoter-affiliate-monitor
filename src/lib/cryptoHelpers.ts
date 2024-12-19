@@ -1,31 +1,36 @@
 import crypto from "crypto";
 
-// Set your encryption key (32 bytes for AES-256)
-const ENCRYPTION_KEY = process.env.CREDENTIALS_ENCRYPTION_KEY!;
-const IV_LENGTH = 16; // AES block size
+const secretKey = process.env.CREDENTIALS_ENCRYPTION_KEY!;
+const secretIv = secretKey;
+const encryptionMethod = "aes-256-cbc";
 
-// Encrypt Function
+const key = crypto
+  .createHash("sha512")
+  .update(secretKey)
+  .digest("hex")
+  .substring(0, 32);
+
+const encryptionIV = crypto
+  .createHash("sha512")
+  .update(secretIv)
+  .digest("hex")
+  .substring(0, 16);
+
 export const encrypt = (text: string) => {
-  const iv = crypto.randomBytes(IV_LENGTH); // Generate random IV
-  const key = Buffer.from(ENCRYPTION_KEY, "hex");
-  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-  let encrypted = cipher.update(text, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  return iv.toString("hex") + ":" + encrypted; // Store IV with encrypted text
+  const cipher = crypto.createCipheriv(encryptionMethod, key, encryptionIV);
+  return Buffer.from(
+    cipher.update(text, "utf8", "hex") + cipher.final("hex")
+  ).toString("base64"); // Encrypts data and converts to hex and base64
 };
 
 // Decrypt Function
 export const decrypt = (text: string) => {
-  const [iv, encryptedText] = text.split(":");
-  const key = Buffer.from(ENCRYPTION_KEY, "hex");
-  const decipher = crypto.createDecipheriv(
-    "aes-256-cbc",
-    key,
-    Buffer.from(iv, "hex")
-  );
-  let decrypted = decipher.update(encryptedText, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-  return decrypted;
+  const buff = Buffer.from(text, "base64");
+  const decipher = crypto.createDecipheriv(encryptionMethod, key, encryptionIV);
+  return (
+    decipher.update(buff.toString("utf8"), "hex", "utf8") +
+    decipher.final("utf8")
+  ); // Decrypts data and converts to utf8
 };
 
 const cache = new Map<string, string>();

@@ -166,7 +166,9 @@ export const addPromoter = async (values: PromoterSchema) => {
   });
 
   if (!res.ok) {
-    const message = await res.json();
+    const message = await res.json().catch(() => ({
+      message: "Internal server error",
+    }));
     return { error: message.message || "Failed to add promoter" };
   }
 
