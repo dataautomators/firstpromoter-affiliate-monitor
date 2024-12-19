@@ -12,6 +12,12 @@ Install dependencies:
 pnpm install
 ```
 
+Sync the database:
+
+```
+pnpm db:deploy
+```
+
 Run the server:
 
 ```
