@@ -1,47 +1,67 @@
-# FirstPromoter Frontend
+# FirstPromoter Affiliate Aggregator
+
+![FirstPromoter Affiliate Aggregator Screenshot](./screenshot.png)
+
+## Overview
+
+FirstPromoter Affiliate Aggregator is a tool designed to manage and aggregate affiliate data from FirstPromoter. It provides endpoints to create, update, delete, and retrieve promoter data, as well as manual run and webhook functionalities.
 
 ## Setup
 
-Copy `.env.example` to `.env` and set the variables.
+1. Copy `.env.example` to `.env` and set the variables.
 
 ## Run
 
-Install dependencies:
+1. Install dependencies:
+    ```sh
+    pnpm install
+    ```
 
-```
-pnpm install
-```
+2. Sync the database:
+    ```sh
+    pnpm db:deploy
+    ```
 
-Sync the database:
+3. Run the server:
+    ```sh
+    pnpm dev
+    ```
 
-```
-pnpm db:deploy
-```
-
-Run the server:
-
-```
-pnpm dev
-```
-
-Open http://localhost:3000 in your browser.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Environment Variables
 
-See `.env.example` for the environment variables.
+Refer to `.env.example` for the environment variables required to run the project.
 
 ## Production
 
-```
-pnpm install
-pnpm db:deploy
-pnpm build
-pnpm start
-```
+To run the project in production:
+
+1. Install dependencies:
+    ```sh
+    pnpm install
+    ```
+
+2. Sync the database:
+    ```sh
+    pnpm db:deploy
+    ```
+
+3. Build the project:
+    ```sh
+    pnpm build
+    ```
+
+4. Start the server:
+    ```sh
+    pnpm start
+    ```
 
 ## Docker
 
-```
+To run the project using Docker:
+
+```sh
 docker compose up -d --build
 ```
 
@@ -49,22 +69,20 @@ docker compose up -d --build
 
 ### Initial Setup
 
-- Login to clerk dashboard
-- Create an project and save the credentials to `env`
+1. Login to Clerk dashboard.
+2. Create a project and save the credentials to `.env`.
 
-## Optional: Clerk Webhook
+### Optional: Clerk Webhook
 
-Clert webhook is used to get the user created, updated and deleted events. This is useful to create a promoter when a user is created and delete the promoter when a user is deleted.
+Clerk webhook is used to get user created, updated, and deleted events. This is useful to create a promoter when a user is created and delete the promoter when a user is deleted.
 
-- Go to `Configure` -> `Webhook` -> `Add Endpoint` and add the ngrok tunnel or cloudflare tunnel url. Note: you need to point the tunnel to the running server. The webhook will running in `/api/webhook` so your url should be like `https://<ngrok-url>/api/webhook`.
-- Select these events:
-  - User created
-  - User updated
-  - User deleted
-  - ![Clerk Webhook](./.github/images/clerk%202.png)
-- Click to `Create`
-- Save the `Signing Secret` to `env`
-  - ![Clerk Signing Secret](./.github/images/clerk%203.png)
+1. Go to `Configure` -> `Webhook` -> `Add Endpoint` and add the ngrok tunnel or cloudflare tunnel URL. Note: you need to point the tunnel to the running server. The webhook will run at `/api/webhook`, so your URL should be like `https://<ngrok-url>/api/webhook`.
+2. Select these events:
+    - User created
+    - User updated
+    - User deleted
+3. Click `Create`.
+4. Save the `Signing Secret` to `.env`.
 
 ## Endpoints
 
@@ -171,9 +189,11 @@ This endpoint will stream the promoter data to the client.
 POST /api/webhook
 ```
 
-This endpoint is used by Clerk to send webhooks when a user is created, updated or deleted.
+This endpoint is used by Clerk to send webhooks when a user is created, updated, or deleted.
 
-### Sample Promoter output
+## Sample Outputs
+
+### Sample Promoter Output
 
 ```json
 {
@@ -189,7 +209,7 @@ This endpoint is used by Clerk to send webhooks when a user is created, updated 
 }
 ```
 
-### Sample PromoterData outputs
+### Sample PromoterData Outputs
 
 ```json
 {

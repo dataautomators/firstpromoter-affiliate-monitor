@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/">
           <h1 className="text-xl md:text-2xl font-bold">
-            FirstPromoter Dashboard
+          FP Affiliate Aggregator
           </h1>
         </Link>
 
