@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -33,19 +34,18 @@ export default function DeleteConfirmationDialog({
           <span className="sr-only">Delete promoter</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="md:text-xl">
             Are you sure you want to delete this promoter?
           </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-2 py-4">
-          <p className="text-sm text-gray-500">
+          <DialogDescription>
             This will delete the promoter and all associated data permanently.
             You cannot undo this action.
-          </p>
-        </div>
-        <DialogFooter>
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
