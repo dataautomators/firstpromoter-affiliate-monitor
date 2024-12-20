@@ -15,6 +15,9 @@ export function useSSE(
   const addChartHistoryEntry = usePromoterStore(
     (state) => state.addChartHistoryEntry
   );
+  const setLoadingPromoters = usePromoterStore(
+    (state) => state.setLoadingPromoters
+  );
 
   useEffect(() => {
     const eventSource = new EventSource(
@@ -23,6 +26,7 @@ export function useSSE(
 
     eventSource.addEventListener("p-update", (event) => {
       const newData = JSON.parse(event.data) as HistoryEntry;
+      setLoadingPromoters(promoterId, false);
       if (type === "table") {
         addTableHistoryEntry(promoterId, newData);
       } else {
@@ -38,5 +42,12 @@ export function useSSE(
     return () => {
       eventSource.close();
     };
-  }, [type, promoterId, userId, addTableHistoryEntry, addChartHistoryEntry]);
+  }, [
+    type,
+    promoterId,
+    userId,
+    addTableHistoryEntry,
+    addChartHistoryEntry,
+    setLoadingPromoters,
+  ]);
 }

@@ -8,6 +8,10 @@ interface PromoterStore {
   chartHistory: {
     [promoterId: string]: HistoryEntry[];
   };
+  loadingPromoters: {
+    [promoterId: string]: boolean;
+  };
+  setLoadingPromoters: (promoterId: string, loading: boolean) => void;
   addTableHistoryEntry: (promoterId: string, entry: HistoryEntry) => void;
   addChartHistoryEntry: (promoterId: string, entry: HistoryEntry) => void;
   setInitialTableHistory: (promoterId: string, history: HistoryEntry[]) => void;
@@ -17,6 +21,14 @@ interface PromoterStore {
 export const usePromoterStore = create<PromoterStore>((set) => ({
   tableHistory: {},
   chartHistory: {},
+  loadingPromoters: {},
+  setLoadingPromoters: (promoterId: string, loading: boolean) =>
+    set((state) => ({
+      loadingPromoters: {
+        ...state.loadingPromoters,
+        [promoterId]: loading,
+      },
+    })),
   addTableHistoryEntry: (promoterId: string, entry: HistoryEntry) =>
     set((state) => ({
       tableHistory: {

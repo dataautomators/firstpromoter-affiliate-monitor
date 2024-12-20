@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface PaginationProps {
@@ -52,7 +53,6 @@ export default function PromoterPagination({
         variant="outline"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto"
       >
         Previous
       </Button>
@@ -63,6 +63,9 @@ export default function PromoterPagination({
             key={index}
             onClick={() => handlePageChange(page)}
             variant={currentPage === page ? "default" : "outline"}
+            className={cn("", {
+              "pointer-events-none": currentPage === page,
+            })}
           >
             {page}
           </Button>
@@ -77,7 +80,6 @@ export default function PromoterPagination({
         variant="outline"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className="disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto"
       >
         Next
       </Button>

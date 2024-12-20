@@ -23,6 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -31,6 +32,7 @@ import ScheduleInput from "./schedule-input";
 export default function AddPromoterForm() {
   const { toast } = useToast();
   const [isManual, setIsManual] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<PromoterSchema>({
@@ -46,6 +48,7 @@ export default function AddPromoterForm() {
   });
 
   async function onSubmit(values: PromoterSchema) {
+    setIsLoading(true);
     if (values.manualRun) {
       delete values.schedule; // Disable schedule
     }
@@ -66,6 +69,7 @@ export default function AddPromoterForm() {
         variant: "destructive",
       });
     }
+    setIsLoading(false);
   }
 
   return (
@@ -182,7 +186,12 @@ export default function AddPromoterForm() {
                 )}
               />
             )}
-            <Button type="submit">Add Promoter</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Add Promoter
+            </Button>
           </form>
         </Form>
       </CardContent>

@@ -2,14 +2,14 @@ import {
   fetchFilteredPromoterData,
   fetchPromoter,
   fetchPromoterData,
-  manualRun,
 } from "@/app/actions";
+import ManualRunButton from "@/components/manual-run-button";
 import { PromoterHistoryChart } from "@/components/promoter-history-chart";
 import PromoterHistoryTable from "@/components/promoter-history-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@clerk/nextjs/server";
-import { Pencil, RefreshCw } from "lucide-react";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -25,11 +25,6 @@ export default async function PromoterPage({
   const { userId } = await auth();
 
   const promoter = await fetchPromoter(id);
-
-  const handleManualRun = async () => {
-    "use server";
-    await manualRun(id);
-  };
 
   if (!promoter || "error" in promoter) {
     notFound();
@@ -67,12 +62,7 @@ export default async function PromoterPage({
               <p className="text-lg break-all">{promoter.source}</p>
             </div>
             <div>
-              <form action={handleManualRun}>
-                <Button type="submit">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Run Job
-                </Button>
-              </form>
+              <ManualRunButton id={id} />
             </div>
           </div>
         </CardContent>

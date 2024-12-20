@@ -249,15 +249,21 @@ export default function PromoterHistoryTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [totalCount, setTotalCount] = useState(meta.totalCount);
 
   // const pathName = usePathname();
   // const router = useRouter();
 
   useEffect(() => {
-    if (stateHistory[promoterId]) {
-      setData(stateHistory[promoterId]);
-    }
-  }, [promoterId, stateHistory]);
+    if (!stateHistory[promoterId]) return;
+
+    const historyData = stateHistory[promoterId];
+    const startIndex = (meta.page - 1) * meta.pageSize;
+    const endIndex = startIndex + meta.pageSize;
+
+    setData(historyData.slice(startIndex, endIndex));
+    setTotalCount((prev) => prev + 1);
+  }, [promoterId, stateHistory, meta.page, meta.pageSize, meta.totalCount]);
 
   // useEffect(() => {
   //   const sortingId = sorting[0]?.id;
@@ -370,7 +376,7 @@ export default function PromoterHistoryTable({
       </div>
       <div className="flex items-center justify-center space-x-2 py-4">
         <PromoterPagination
-          total={meta.totalCount}
+          total={totalCount}
           currentPage={Number(currentPage)}
           pageSize={meta.pageSize}
         />
