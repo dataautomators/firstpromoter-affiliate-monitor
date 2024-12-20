@@ -1,4 +1,3 @@
-import { deletePromoter } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -9,8 +8,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Promoter as PrismaPromoter, PromoterData } from "@prisma/client";
-import { Eye, Pencil, Trash } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import Link from "next/link";
+import DeleteConfirmationDialog from "./delete-confirmation-dialog";
 import { HistoryEntry } from "./promoter-history-table";
 import PromoterPagination from "./promoter-pagination";
 
@@ -90,12 +90,7 @@ export default async function PromoterTable({
                       <span className="sr-only">Edit promoter</span>
                     </Link>
                   </Button>
-                  <form action={deletePromoter.bind(null, data.id.toString())}>
-                    <Button type="submit" variant="destructive" size="icon">
-                      <Trash className="w-4 h-4" />
-                      <span className="sr-only">Delete promoter</span>
-                    </Button>
-                  </form>
+                  <DeleteConfirmationDialog promoterId={data.id} />
                 </TableCell>
               </TableRow>
             );
