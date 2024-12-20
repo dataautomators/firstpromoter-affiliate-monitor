@@ -23,6 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { type PromoterSchema, promoterSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -38,6 +39,7 @@ export default function EditPromoterForm({
 }) {
   const { toast } = useToast();
   const [isManual, setIsManual] = useState(promoter.manualRun);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<PromoterSchema>({
@@ -48,6 +50,7 @@ export default function EditPromoterForm({
   });
 
   async function onSubmit(values: PromoterSchema) {
+    setIsLoading(true);
     if (values.manualRun) {
       delete values.schedule;
     }
@@ -66,6 +69,7 @@ export default function EditPromoterForm({
         variant: "destructive",
       });
     }
+    setIsLoading(false);
     router.push("/");
   }
 
@@ -182,7 +186,12 @@ export default function EditPromoterForm({
               />
             )}
             <div className="flex gap-8">
-              <Button type="submit">Edit Promoter</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Edit Promoter
+              </Button>
               <Button variant="destructive" type="button" asChild>
                 <Link href={`/promoter/${promoter.id}`}>Cancel</Link>
               </Button>
