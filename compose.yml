@@ -6,8 +6,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        CREDENTIALS_ENCRYPTION_KEY: ${CREDENTIALS_ENCRYPTION_KEY:-some-random-key}
     depends_on:
       - redis
+    environment:
+      - CREDENTIALS_ENCRYPTION_KEY=${CREDENTIALS_ENCRYPTION_KEY:-some-random-key}
     env_file: .env
     restart: always
     ports:
@@ -17,18 +20,21 @@ services:
   redis:
     image: redis:latest
     restart: always
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-superstrongpassword}
     ports:
-      - "6379:6379"
+      - "${REDIS_PUBLIC_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
     networks:
       - firstpromoter-dashboard
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
 
 volumes:
   redis_data:
+
 
 networks:
   firstpromoter-dashboard:
