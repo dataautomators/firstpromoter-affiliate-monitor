@@ -21,7 +21,7 @@ export function useSSE(
 
   useEffect(() => {
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/sse/${promoterId}?userId=${userId}`
+      `/api/sse/${promoterId}?userId=${userId}`
     );
 
     eventSource.addEventListener("p-update", (event) => {
