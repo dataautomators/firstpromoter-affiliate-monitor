@@ -33,11 +33,14 @@ RUN pnpm prisma generate
 # set required the env before build so it doesn't reinstall just due to some variable change
 # Set build-time arguments
 ARG NEXT_PUBLIC_API_URL
+ARG CREDENTIALS_ENCRYPTION_KEY
 
 # Set environment variables using the build arguments
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV CREDENTIALS_ENCRYPTION_KEY=${CREDENTIALS_ENCRYPTION_KEY}
 
 RUN pnpm build
+RUN pnpm db:deploy
 
 # Create startup script
 COPY <<EOF /docker-entrypoint.sh
@@ -46,7 +49,6 @@ source /root/.profile
 corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 cd /usr/src/app
-pnpm db:deploy
 pnpm start
 EOF
 

@@ -6,30 +6,37 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        CREDENTIALS_ENCRYPTION_KEY: ${CREDENTIALS_ENCRYPTION_KEY:-some-random-key}
     depends_on:
       - redis
+    environment:
+      - CREDENTIALS_ENCRYPTION_KEY=${CREDENTIALS_ENCRYPTION_KEY:-some-random-key}
     env_file: .env
-    restart: always
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:${PORT:-3000}"
     networks:
       - firstpromoter-dashboard
+
   redis:
-    image: redis:latest
-    restart: always
+    image: bitnami/redis:latest
+    restart: unless-stopped
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-superstrongpassword}
     ports:
-      - "6379:6379"
+      - "${REDIS_PUBLIC_PORT:-6379}:6379"
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - redis_data:/bitnami/redis/
     networks:
       - firstpromoter-dashboard
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-superstrongpassword}", "ping" ]
 
 volumes:
   redis_data:
+    driver: local
 
 networks:
   firstpromoter-dashboard:
     driver: bridge
+    name: firstpromoter-dashboard
